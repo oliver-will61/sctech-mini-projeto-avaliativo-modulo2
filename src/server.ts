@@ -1,15 +1,15 @@
 import "dotenv/config";
 import express from "express";
 import { AppDataSource } from "./database/data-source";
+import { routes } from "./routes";
+import { errorHandler } from "./middlewares/errorHandler";
 
 const app = express();
 const PORT = process.env.PORT || 3000;
 
 app.use(express.json());
-
-app.get("/", (req, res) => {
-  res.json({ message: "API is running" });
-});
+app.use(routes);
+app.use(errorHandler);
 
 AppDataSource.initialize()
   .then(() => {
