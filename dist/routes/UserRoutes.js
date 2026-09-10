@@ -1,11 +1,18 @@
 "use strict";
+// Definição de todas as rotas da aplicação
+// Cada rota mapeia um endpoint HTTP para um método de um controller
 Object.defineProperty(exports, "__esModule", { value: true });
 exports.routes = void 0;
 const express_1 = require("express");
 const UserController_1 = require("../controllers/UserController");
+const AuthController_1 = require("../controllers/AuthController");
 const routes = (0, express_1.Router)();
 exports.routes = routes;
 const userController = new UserController_1.UserController();
+const authController = new AuthController_1.AuthController();
+// Rotas de autenticação
+routes.post("/auth/register", (req, res) => authController.register(req, res));
+// Rotas de gerenciamento de usuários (CRUD)
 routes.get("/users", (req, res) => userController.index(req, res));
 routes.get("/users/:id", (req, res) => userController.show(req, res));
 routes.post("/users", (req, res) => userController.store(req, res));

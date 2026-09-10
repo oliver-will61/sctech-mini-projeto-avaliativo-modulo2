@@ -1,4 +1,6 @@
 "use strict";
+// Entidade que representa a tabela "users" no banco de dados
+// Cada propriedade decorada mapeia para uma coluna da tabela
 var __decorate = (this && this.__decorate) || function (decorators, target, key, desc) {
     var c = arguments.length, r = c < 3 ? target : desc === null ? desc = Object.getOwnPropertyDescriptor(target, key) : desc, d;
     if (typeof Reflect === "object" && typeof Reflect.decorate === "function") r = Reflect.decorate(decorators, target, key, desc);
@@ -12,12 +14,14 @@ Object.defineProperty(exports, "__esModule", { value: true });
 exports.User = exports.UserRole = void 0;
 require("reflect-metadata");
 const typeorm_1 = require("typeorm");
+// Enum que define os perfis de acesso permitidos no sistema
 var UserRole;
 (function (UserRole) {
     UserRole["ADMIN"] = "admin";
     UserRole["USER"] = "user";
     UserRole["MODERATOR"] = "moderator";
 })(UserRole || (exports.UserRole = UserRole = {}));
+// Mapeia esta classe para a tabela "users" no banco
 let User = class User {
 };
 exports.User = User;
@@ -34,7 +38,7 @@ __decorate([
     __metadata("design:type", String)
 ], User.prototype, "email", void 0);
 __decorate([
-    (0, typeorm_1.Column)(),
+    (0, typeorm_1.Column)({ select: false }),
     __metadata("design:type", String)
 ], User.prototype, "password", void 0);
 __decorate([

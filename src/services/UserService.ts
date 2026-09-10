@@ -1,3 +1,7 @@
+// Service responsável pela lógica de negócio do usuário
+// Contém as regras de validação e orquestra as chamadas ao repositório
+// Não acessa o banco diretamente — sempre passa pelo repositório
+
 import { User } from "../entities/User";
 import { UserRepository } from "../repositories/UserRepository";
 import { AppError } from "../utils/AppError";
@@ -5,10 +9,12 @@ import { AppError } from "../utils/AppError";
 export class UserService {
   private userRepository = new UserRepository();
 
+  // Retorna todos os usuários cadastrados
   async findAll(): Promise<User[]> {
     return this.userRepository.findAll();
   }
 
+  // Busca um usuário pelo ID, lança erro se não encontrar
   async findById(id: string): Promise<User> {
     const user = await this.userRepository.findById(id);
     if (!user) {
@@ -17,10 +23,12 @@ export class UserService {
     return user;
   }
 
+  // Busca um usuário pelo e-mail
   async findByEmail(email: string): Promise<User | null> {
     return this.userRepository.findByEmail(email);
   }
 
+  // Cria um novo usuário após verificar se o e-mail já está em uso
   async create(data: Partial<User>): Promise<User> {
     const existingUser = await this.userRepository.findByEmail(data.email!);
     if (existingUser) {
@@ -29,12 +37,14 @@ export class UserService {
     return this.userRepository.create(data);
   }
 
+  // Atualiza um usuário (verifica se existe antes de atualizar)
   async update(id: string, data: Partial<User>): Promise<User> {
     await this.findById(id);
     const user = await this.userRepository.update(id, data);
     return user!;
   }
 
+  // Remove um usuário (verifica se existe antes de remover)
   async delete(id: string): Promise<void> {
     await this.findById(id);
     await this.userRepository.delete(id);

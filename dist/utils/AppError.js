@@ -1,4 +1,6 @@
 "use strict";
+// Classe utilitária para criação de erros personalizados
+// Usada em services e middlewares para retornar erros HTTP com mensagem e código de status
 Object.defineProperty(exports, "__esModule", { value: true });
 exports.AppError = void 0;
 class AppError {
