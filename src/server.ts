@@ -1,7 +1,7 @@
 import "dotenv/config";
 import express from "express";
 import { AppDataSource } from "./database/data-source";
-import { routes } from "./routes";
+import { routes } from "./routes/UserRoutes";
 import { errorHandler } from "./middlewares/errorHandler";
 
 const app = express();

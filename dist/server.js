@@ -6,12 +6,12 @@ Object.defineProperty(exports, "__esModule", { value: true });
 require("dotenv/config");
 const express_1 = __importDefault(require("express"));
 const data_source_1 = require("./database/data-source");
-const routes_1 = require("./routes");
+const UserRoutes_1 = require("./routes/UserRoutes");
 const errorHandler_1 = require("./middlewares/errorHandler");
 const app = (0, express_1.default)();
 const PORT = process.env.PORT || 3000;
 app.use(express_1.default.json());
-app.use(routes_1.routes);
+app.use(UserRoutes_1.routes);
 app.use(errorHandler_1.errorHandler);
 data_source_1.AppDataSource.initialize()
     .then(() => {
