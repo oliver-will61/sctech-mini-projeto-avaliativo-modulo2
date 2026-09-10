@@ -75,11 +75,24 @@ npm run build
 npm start
 ```
 
+## Headers Padrão
+
+Todas as requisições que enviam corpo (body) devem utilizar o seguinte header:
+
+```
+Content-Type: application/json
+```
+
 ## Endpoints
 
 ### Autenticação
 
 #### `POST /auth/register` — Cadastrar novo usuário
+
+**Headers:**
+```
+Content-Type: application/json
+```
 
 **Request:**
 ```json
@@ -93,7 +106,7 @@ npm start
 **Response (201):**
 ```json
 {
-  "id": "uuid-a1b2c3d4",
+  "id": 1,
   "name": "João Silva",
   "email": "joao@email.com",
   "role": "user",
@@ -119,11 +132,16 @@ npm start
 
 #### `GET /users` — Listar todos os usuários
 
+**Headers:**
+```
+Content-Type: application/json
+```
+
 **Response (200):**
 ```json
 [
   {
-    "id": "uuid-a1b2c3d4",
+    "id": 1,
     "name": "João Silva",
     "email": "joao@email.com",
     "role": "user",
@@ -136,10 +154,15 @@ npm start
 
 #### `GET /users/:id` — Buscar usuário por ID
 
+**Headers:**
+```
+Content-Type: application/json
+```
+
 **Response (200):**
 ```json
 {
-  "id": "uuid-a1b2c3d4",
+  "id": 1,
   "name": "João Silva",
   "email": "joao@email.com",
   "role": "user",
@@ -156,6 +179,11 @@ npm start
 
 #### `POST /users` — Criar novo usuário
 
+**Headers:**
+```
+Content-Type: application/json
+```
+
 **Request:**
 ```json
 {
@@ -169,7 +197,7 @@ npm start
 **Response (201):**
 ```json
 {
-  "id": "uuid-e5f6g7h8",
+  "id": 2,
   "name": "Maria Santos",
   "email": "maria@email.com",
   "role": "admin",
@@ -186,6 +214,11 @@ npm start
 
 #### `PUT /users/:id` — Atualizar usuário
 
+**Headers:**
+```
+Content-Type: application/json
+```
+
 **Request:**
 ```json
 {
@@ -196,7 +229,7 @@ npm start
 **Response (200):**
 ```json
 {
-  "id": "uuid-a1b2c3d4",
+  "id": 1,
   "name": "João Silva Atualizado",
   "email": "joao@email.com",
   "role": "user",
@@ -213,6 +246,11 @@ npm start
 
 #### `DELETE /users/:id` — Remover usuário
 
+**Headers:**
+```
+Content-Type: application/json
+```
+
 **Response (204):** Sem conteúdo
 
 **Erros possíveis:**
@@ -228,11 +266,11 @@ Tabela `users`:
 
 | Coluna      | Tipo        | Restrições       | Descrição                    |
 |-------------|-------------|------------------|------------------------------|
-| id          | UUID        | PK, auto-gerado  | Identificador único          |
+| id          | SERIAL      | PK, auto-gerado  | Identificador único          |
 | name        | VARCHAR(255)| NOT NULL         | Nome do usuário              |
 | email       | VARCHAR(255)| NOT NULL, UNIQUE | E-mail do usuário            |
 | password    | VARCHAR(255)| NOT NULL         | Senha com hash bcrypt        |
-| role        | ENUM        | DEFAULT 'user'   | Perfil: admin, user, moderator |
+| role        | VARCHAR(50) | DEFAULT 'user'   | Perfil: admin, user, moderator |
 | created_at  | TIMESTAMP   | DEFAULT NOW()    | Data de criação do registro  |
 
 **Schema SQL** disponível em `src/database/schema.sql`.
