@@ -16,7 +16,7 @@ export class UserRepository implements IUserRepository {
   }
 
   // Busca um usuário pelo ID
-  async findById(id: string): Promise<User | null> {
+  async findById(id: number): Promise<User | null> {
     return this.repository.findOneBy({ id });
   }
 
@@ -42,13 +42,13 @@ export class UserRepository implements IUserRepository {
   }
 
   // Atualiza um usuário e retorna os dados atualizados
-  async update(id: string, data: Partial<User>): Promise<User | null> {
+  async update(id: number, data: Partial<User>): Promise<User | null> {
     await this.repository.update(id, data);
     return this.findById(id);
   }
 
   // Remove um usuário pelo ID
-  async delete(id: string): Promise<void> {
+  async delete(id: number): Promise<void> {
     await this.repository.delete(id);
   }
 }

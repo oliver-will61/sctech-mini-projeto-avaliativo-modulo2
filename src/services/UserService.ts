@@ -15,7 +15,7 @@ export class UserService {
   }
 
   // Busca um usuário pelo ID, lança erro se não encontrar
-  async findById(id: string): Promise<User> {
+  async findById(id: number): Promise<User> {
     const user = await this.userRepository.findById(id);
     if (!user) {
       throw new AppError("User not found", 404);
@@ -38,14 +38,14 @@ export class UserService {
   }
 
   // Atualiza um usuário (verifica se existe antes de atualizar)
-  async update(id: string, data: Partial<User>): Promise<User> {
+  async update(id: number, data: Partial<User>): Promise<User> {
     await this.findById(id);
     const user = await this.userRepository.update(id, data);
     return user!;
   }
 
   // Remove um usuário (verifica se existe antes de remover)
-  async delete(id: string): Promise<void> {
+  async delete(id: number): Promise<void> {
     await this.findById(id);
     await this.userRepository.delete(id);
   }

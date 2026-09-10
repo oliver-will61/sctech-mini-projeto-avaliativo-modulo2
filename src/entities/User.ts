@@ -19,9 +19,9 @@ export enum UserRole {
 // Mapeia esta classe para a tabela "users" no banco
 @Entity("users")
 export class User {
-  // UUID gerado automaticamente como identificador único
-  @PrimaryGeneratedColumn("uuid")
-  id!: string;
+  // ID numérico gerado automaticamente (auto-increment)
+  @PrimaryGeneratedColumn()
+  id!: number;
 
   // Nome completo do usuário
   @Column()
@@ -35,9 +35,9 @@ export class User {
   @Column({ select: false })
   password!: string;
 
-  // Perfil de acesso (enum), padrão é "user"
-  @Column({ type: "simple-enum", enum: UserRole, default: UserRole.USER })
-  role!: UserRole;
+  // Perfil de acesso (string), padrão é "user"
+  @Column({ type: "varchar", length: 50, default: "user" })
+  role!: string;
 
   // Data de criação do registro (preenchida automaticamente pelo TypeORM)
   @CreateDateColumn()

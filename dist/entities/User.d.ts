@@ -5,11 +5,11 @@ export declare enum UserRole {
     MODERATOR = "moderator"
 }
 export declare class User {
-    id: string;
+    id: number;
     name: string;
     email: string;
     password: string;
-    role: UserRole;
+    role: string;
     created_at: Date;
 }
 //# sourceMappingURL=User.d.ts.map

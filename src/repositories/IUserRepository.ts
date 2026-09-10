@@ -9,7 +9,7 @@ export interface IUserRepository {
   findAll(): Promise<User[]>;
 
   // Busca um usuário pelo ID (retorna null se não encontrar)
-  findById(id: string): Promise<User | null>;
+  findById(id: number): Promise<User | null>;
 
   // Busca um usuário pelo e-mail (retorna null se não encontrar)
   findByEmail(email: string): Promise<User | null>;
@@ -22,8 +22,8 @@ export interface IUserRepository {
   create(data: Partial<User>): Promise<User>;
 
   // Atualiza os dados de um usuário pelo ID
-  update(id: string, data: Partial<User>): Promise<User | null>;
+  update(id: number, data: Partial<User>): Promise<User | null>;
 
   // Remove um usuário do banco pelo ID
-  delete(id: string): Promise<void>;
+  delete(id: number): Promise<void>;
 }

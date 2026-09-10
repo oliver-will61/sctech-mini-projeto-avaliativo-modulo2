@@ -26,8 +26,8 @@ let User = class User {
 };
 exports.User = User;
 __decorate([
-    (0, typeorm_1.PrimaryGeneratedColumn)("uuid"),
-    __metadata("design:type", String)
+    (0, typeorm_1.PrimaryGeneratedColumn)(),
+    __metadata("design:type", Number)
 ], User.prototype, "id", void 0);
 __decorate([
     (0, typeorm_1.Column)(),
@@ -42,7 +42,7 @@ __decorate([
     __metadata("design:type", String)
 ], User.prototype, "password", void 0);
 __decorate([
-    (0, typeorm_1.Column)({ type: "simple-enum", enum: UserRole, default: UserRole.USER }),
+    (0, typeorm_1.Column)({ type: "varchar", length: 50, default: "user" }),
     __metadata("design:type", String)
 ], User.prototype, "role", void 0);
 __decorate([

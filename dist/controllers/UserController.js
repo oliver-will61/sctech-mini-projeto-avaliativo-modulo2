@@ -16,7 +16,7 @@ class UserController {
     }
     // GET /users/:id — retorna um usuário pelo ID
     async show(req, res) {
-        const user = await this.userService.findById(req.params.id);
+        const user = await this.userService.findById(Number(req.params.id));
         return res.json(user);
     }
     // POST /users — cria um novo usuário
@@ -27,12 +27,12 @@ class UserController {
     }
     // PUT /users/:id — atualiza um usuário
     async update(req, res) {
-        const user = await this.userService.update(req.params.id, req.body);
+        const user = await this.userService.update(Number(req.params.id), req.body);
         return res.json(user);
     }
     // DELETE /users/:id — remove um usuário
     async delete(req, res) {
-        await this.userService.delete(req.params.id);
+        await this.userService.delete(Number(req.params.id));
         return res.status(204).send();
     }
 }
