@@ -17,7 +17,7 @@ class AuthService {
     // Cadastra um novo usuário no sistema
     // Valida campos obrigatórios, formato do e-mail, duplicidade e armazena a senha com hash
     async register(data) {
-        const { name, email, password } = data;
+        const { name, email, password, role } = data;
         // Verifica se todos os campos obrigatórios foram preenchidos
         if (!name || !email || !password) {
             throw new AppError_1.AppError("Name, email and password are required", 400);
@@ -39,6 +39,7 @@ class AuthService {
             name,
             email,
             password: hashedPassword,
+            ...(role && { role }),
         });
         // Remove a senha do objeto antes de retornar (nunca expor a senha)
         const { password: _, ...userWithoutPassword } = user;
@@ -56,13 +57,13 @@ class AuthService {
         const user = await this.userRepository.findByEmailWithPassword(email);
         // Se não encontrar ou a senha não bater, retorna erro genérico (não informa qual campo)
         if (!user) {
-            throw new AppError_1.AppError("Invalid credentials", 401);
+            throw new AppError_1.AppError("Invalid credentiaols", 401);
         }
         const passwordMatch = await bcrypt_1.default.compare(password, user.password);
         if (!passwordMatch) {
             throw new AppError_1.AppError("Invalid credentials", 401);
         }
-        // Gera o token JWT com id e role do usuário
+        // Gera o token JWT com id e role do usuário  
         const token = jsonwebtoken_1.default.sign({ id: user.id, role: user.role }, process.env.JWT_SECRET, { expiresIn: process.env.JWT_EXPIRATION || "1d" });
         // Remove a senha do retorno
         const { password: _, ...userWithoutPassword } = user;

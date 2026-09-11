@@ -85,6 +85,41 @@ Todas as requisições que enviam corpo (body) devem utilizar o seguinte header:
 Content-Type: application/json
 ```
 
+## Autenticação
+
+### Middleware `ensureAuthenticated`
+
+As rotas protegidas requerem um token JWT válido no header da requisição.
+
+**Header obrigatório para rotas protegidas:**
+```
+Authorization: Bearer <token>
+```
+
+**Fluxo de validação:**
+1. Verifica se o header `Authorization` existe e começa com `Bearer `
+2. Extrai o token do header
+3. Valida o token usando o `JWT_SECRET`
+4. Se válido: decodifica o payload (`id`, `role`) e adiciona ao `req.user`
+5. Se inválido/ausente: retorna erro 401
+
+**Erros possíveis:**
+| Status | Mensagem              |
+|--------|-----------------------|
+| 401    | Token not provided    |
+| 401    | Invalid or expired token |
+
+**Rotas públicas (não requerem token):**
+- `POST /auth/register`
+- `POST /auth/login`
+
+**Rotas protegidas (requerem token):**
+- `GET /users`
+- `GET /users/:id`
+- `POST /users`
+- `PUT /users/:id`
+- `DELETE /users/:id`
+
 ## Endpoints
 
 ### Autenticação

@@ -4,6 +4,7 @@ export declare class AuthService {
         name: string;
         email: string;
         password: string;
+        role?: string;
     }): Promise<any>;
     login(data: {
         email: string;
