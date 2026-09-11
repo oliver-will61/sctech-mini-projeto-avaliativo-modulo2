@@ -11,8 +11,8 @@ export class AuthService {
 
   // Cadastra um novo usuário no sistema
   // Valida campos obrigatórios, formato do e-mail, duplicidade e armazena a senha com hash
-  async register(data: { name: string; email: string; password: string }) {
-    const { name, email, password } = data;
+  async register(data: { name: string; email: string; password: string; role?: string }) {
+    const { name, email, password, role } = data;
 
     // Verifica se todos os campos obrigatórios foram preenchidos
     if (!name || !email || !password) {
@@ -39,6 +39,7 @@ export class AuthService {
       name,
       email,
       password: hashedPassword,
+      ...(role && { role }),
     });
 
     // Remove a senha do objeto antes de retornar (nunca expor a senha)
