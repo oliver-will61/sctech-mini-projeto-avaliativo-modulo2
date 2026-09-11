@@ -10,8 +10,10 @@ import {
 } from "typeorm";
 
 // Enum que define os perfis de acesso permitidos no sistema
+// Admin possui acesso completo; Atendente possui acesso operacional restrito
 export enum UserRole {
   ADMIN = "admin",
+  ATTENDANT = "atendente",
   USER = "user",
   MODERATOR = "moderator",
 }
