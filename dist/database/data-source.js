@@ -13,7 +13,7 @@ exports.AppDataSource = new typeorm_1.DataSource({
     username: process.env.DB_USER,
     password: process.env.DB_PASSWORD,
     database: process.env.DB_NAME,
-    synchronize: false, // Cria/atualiza tabelas automaticamente baseado nas entidades (usar apenas em dev)
+    synchronize: true, // Cria/atualiza tabelas automaticamente baseado nas entidades (usar apenas em dev)
     logging: true, // Loga todas as queries SQL executadas no console
     entities: [User_1.User], // Lista de entidades que o TypeORM deve mapear para tabelas
 });

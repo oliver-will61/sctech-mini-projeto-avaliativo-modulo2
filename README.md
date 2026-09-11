@@ -274,3 +274,152 @@ Tabela `users`:
 | created_at  | TIMESTAMP   | DEFAULT NOW()    | Data de criação do registro  |
 
 **Schema SQL** disponível em `src/database/schema.sql`.
+
+## Features
+
+### Hash de Senha com bcrypt (RF06)
+
+A senha nunca é armazenada ou retornada em texto puro. O sistema utiliza **bcrypt** com 10 rounds de salt para gerar o hash antes de salvar no banco.
+
+**Como funciona:**
+- Ao cadastrar um usuário (`POST /users` ou `POST /auth/register`), a senha enviada no body é hasheada antes de ser salva
+- Ao atualizar um usuário com nova senha (`PUT /users/:id`), a nova senha também é hasheada
+- A coluna `password` possui `select: false` na entidade, impedindo que seja retornada nas queries padrão
+- O método `findByEmailWithPassword` seleciona a senha explicitamente quando necessário (autenticação)
+
+**Exemplo de fluxo:**
+```
+Senha enviada: "minha123"
+Hash gerado:   "$2b$10$N9qo8uLOickgx2ZMRZoMye..."
+Banco armazena: "$2b$10$N9qo8uLOickgx2ZMRZoMye..."
+```
+
+---
+
+## Fluxo dos Dados
+
+### Cadastro de Usuário (`POST /users`)
+
+```
+┌─────────────────────────────────────────────────────────────────────┐
+│                         CLIENTE (Frontend)                          │
+│   POST /users                                                       │
+│   Body: { name, email, password }                                   │
+└──────────────────────────────┬──────────────────────────────────────┘
+                               │
+                               ▼
+┌─────────────────────────────────────────────────────────────────────┐
+│                          USER ROUTES                                │
+│   routes.post("/users", userController.store)                       │
+└──────────────────────────────┬──────────────────────────────────────┘
+                               │
+                               ▼
+┌─────────────────────────────────────────────────────────────────────┐
+│                       USER CONTROLLER                               │
+│   Extrai dados do req.body: { name, email, password, role }         │
+└──────────────────────────────┬──────────────────────────────────────┘
+                               │
+                               ▼
+┌─────────────────────────────────────────────────────────────────────┐
+│                        USER SERVICE                                 │
+│   1. Verifica se o e-mail já está em uso (findByEmail)             │
+│   2. Se existir → lança AppError(400)                               │
+│   3. Gera hash da senha: bcrypt.hash(password, 10)                  │
+│   4. Chama repository.create() com dados + senha hasheada           │
+│   5. Remove password do objeto antes de retornar                    │
+└──────────────────────────────┬──────────────────────────────────────┘
+                               │
+                               ▼
+┌─────────────────────────────────────────────────────────────────────┐
+│                       USER REPOSITORY                               │
+│   1. Cria instância da entidade: repository.create(data)            │
+│   2. Salva no banco: repository.save(user)                          │
+└──────────────────────────────┬──────────────────────────────────────┘
+                               │
+                               ▼
+┌─────────────────────────────────────────────────────────────────────┐
+│                     BANCO DE DADOS (PostgreSQL)                     │
+│   INSERT INTO users (name, email, password, role)                   │
+│   VALUES ('João', 'joao@email.com', '$2b$10$...', 'user')           │
+└──────────────────────────────┬──────────────────────────────────────┘
+                               │
+                               ▼
+┌─────────────────────────────────────────────────────────────────────┐
+│                       RESPOSTA AO CLIENTE                           │
+│   201 Created                                                       │
+│   { id: 1, name: "João", email: "joao@email.com", role: "user" }   │
+│   (password NÃO é retornada)                                        │
+└─────────────────────────────────────────────────────────────────────┘
+```
+
+### Cadastro via Auth (`POST /auth/register`)
+
+```
+┌─────────────────────────────────────────────────────────────────────┐
+│                         CLIENTE (Frontend)                          │
+│   POST /auth/register                                               │
+│   Body: { name, email, password }                                   │
+└──────────────────────────────┬──────────────────────────────────────┘
+                               │
+                               ▼
+┌─────────────────────────────────────────────────────────────────────┐
+│                          USER ROUTES                                │
+│   routes.post("/auth/register", authController.register)            │
+└──────────────────────────────┬──────────────────────────────────────┘
+                               │
+                               ▼
+┌─────────────────────────────────────────────────────────────────────┐
+│                       AUTH CONTROLLER                               │
+│   Extrai dados do req.body: { name, email, password }               │
+└──────────────────────────────┬──────────────────────────────────────┘
+                               │
+                               ▼
+┌─────────────────────────────────────────────────────────────────────┐
+│                        AUTH SERVICE                                 │
+│   1. Valida campos obrigatórios (name, email, password)             │
+│   2. Valida formato do e-mail com regex                             │
+│   3. Verifica se e-mail já existe (findByEmail)                     │
+│   4. Gera hash da senha: bcrypt.hash(password, 10)                  │
+│   5. Cria usuário no banco                                          │
+│   6. Remove password do objeto antes de retornar                    │
+└──────────────────────────────┬──────────────────────────────────────┘
+                               │
+                               ▼
+┌─────────────────────────────────────────────────────────────────────┐
+│                       USER REPOSITORY                               │
+│   1. Cria instância da entidade: repository.create(data)            │
+│   2. Salva no banco: repository.save(user)                          │
+└──────────────────────────────┬──────────────────────────────────────┘
+                               │
+                               ▼
+┌─────────────────────────────────────────────────────────────────────┐
+│                     BANCO DE DADOS (PostgreSQL)                     │
+│   INSERT INTO users (name, email, password, role)                   │
+│   VALUES ('João', 'joao@email.com', '$2b$10$...', 'user')           │
+└──────────────────────────────┬──────────────────────────────────────┘
+                               │
+                               ▼
+┌─────────────────────────────────────────────────────────────────────┐
+│                       RESPOSTA AO CLIENTE                           │
+│   201 Created                                                       │
+│   { id: 1, name: "João", email: "joao@email.com", role: "user" }   │
+│   (password NÃO é retornada)                                        │
+└─────────────────────────────────────────────────────────────────────┘
+```
+
+### Tratamento de Erros
+
+```
+┌─────────────────────────────────────────────────────────────────────┐
+│                    QUALQUER CAMADA (Service/Controller)              │
+│   throw new AppError("mensagem", statusCode)                        │
+└──────────────────────────────┬──────────────────────────────────────┘
+                               │
+                               ▼
+┌─────────────────────────────────────────────────────────────────────┐
+│                    ERROR HANDLER MIDDLEWARE                          │
+│   1. Verifica se é AppError                                         │
+│   2. Se sim → retorna { error: message } com o statusCode           │
+│   3. Se não → loga erro e retorna 500 "Internal server error"       │
+└─────────────────────────────────────────────────────────────────────┘
+```

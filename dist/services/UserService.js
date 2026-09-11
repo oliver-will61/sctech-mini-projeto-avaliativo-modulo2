@@ -2,8 +2,12 @@
 // Service responsável pela lógica de negócio do usuário
 // Contém as regras de validação e orquestra as chamadas ao repositório
 // Não acessa o banco diretamente — sempre passa pelo repositório
+var __importDefault = (this && this.__importDefault) || function (mod) {
+    return (mod && mod.__esModule) ? mod : { "default": mod };
+};
 Object.defineProperty(exports, "__esModule", { value: true });
 exports.UserService = void 0;
+const bcrypt_1 = __importDefault(require("bcrypt"));
 const UserRepository_1 = require("../repositories/UserRepository");
 const AppError_1 = require("../utils/AppError");
 class UserService {
@@ -27,16 +31,28 @@ class UserService {
         return this.userRepository.findByEmail(email);
     }
     // Cria um novo usuário após verificar se o e-mail já está em uso
+    // A senha é armazenada apenas com hash (bcrypt), nunca em texto puro
     async create(data) {
         const existingUser = await this.userRepository.findByEmail(data.email);
         if (existingUser) {
             throw new AppError_1.AppError("Email already in use", 400);
         }
-        return this.userRepository.create(data);
+        // Gera o hash da senha com bcrypt (custo 10 rounds)
+        if (data.password) {
+            data.password = await bcrypt_1.default.hash(data.password, 10);
+        }
+        const user = await this.userRepository.create(data);
+        // Remove a senha do objeto antes de retornar (nunca expor a senha)
+        const { password: _, ...userWithoutPassword } = user;
+        return userWithoutPassword;
     }
     // Atualiza um usuário (verifica se existe antes de atualizar)
+    // Se uma nova senha for enviada, ela é hasheada antes de ser salva
     async update(id, data) {
         await this.findById(id);
+        if (data.password) {
+            data.password = await bcrypt_1.default.hash(data.password, 10);
+        }
         const user = await this.userRepository.update(id, data);
         return user;
     }
