@@ -5,9 +5,17 @@ import bcrypt from "bcrypt";
 import jwt from "jsonwebtoken";
 import { UserRepository } from "../repositories/UserRepository";
 import { AppError } from "../utils/AppError";
+import { UserRole } from "../entities/User";
 
 export class AuthService {
   private userRepository = new UserRepository();
+
+  // Perfis que podem ser autoatribuídos no cadastro público
+  // Admin e Moderator só podem ser atribuídos por um Admin já autenticado (via POST /users)
+  private static readonly ALLOWED_SELF_REGISTER_ROLES = [
+    UserRole.USER,
+    UserRole.ATTENDANT,
+  ];
 
   // Cadastra um novo usuário no sistema
   // Valida campos obrigatórios, formato do e-mail, duplicidade e armazena a senha com hash
@@ -17,6 +25,11 @@ export class AuthService {
     // Verifica se todos os campos obrigatórios foram preenchidos
     if (!name || !email || !password) {
       throw new AppError("Name, email and password are required", 400);
+    }
+
+    // Impede que um usuário se cadastre sozinho com perfis privilegiados (ex.: admin)
+    if (role && !AuthService.ALLOWED_SELF_REGISTER_ROLES.includes(role as UserRole)) {
+      throw new AppError("Cannot register with this role", 403);
     }
 
     // Valida o formato do e-mail usando expressão regular

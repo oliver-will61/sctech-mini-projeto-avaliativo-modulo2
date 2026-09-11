@@ -5,7 +5,7 @@ import { Router } from "express";
 import { UserController } from "../controllers/UserController";
 import { AuthController } from "../controllers/AuthController";
 import { validaToken } from "../middlewares/validaToken";
-import { authorizeRole } from "../middlewares/authorizeRole";
+import { validaRole } from "../middlewares/validaRole";
 import { UserRole } from "../entities/User";
 
 const routes = Router();
@@ -21,31 +21,31 @@ routes.post("/auth/login", (req, res) => authController.login(req, res));
 routes.get(
   "/users",
   validaToken,
-  authorizeRole(UserRole.ADMIN, UserRole.ATTENDANT),
+  validaRole(UserRole.ADMIN, UserRole.ATTENDANT),
   (req, res) => userController.index(req, res)
 );
 routes.get(
   "/users/:id",
   validaToken,
-  authorizeRole(UserRole.ADMIN, UserRole.ATTENDANT),
+  validaRole(UserRole.ADMIN, UserRole.ATTENDANT),
   (req, res) => userController.show(req, res)
 );
 routes.post(
   "/users",
   validaToken,
-  authorizeRole(UserRole.ADMIN),
+  validaRole(UserRole.ADMIN),
   (req, res) => userController.store(req, res)
 );
 routes.put(
   "/users/:id",
   validaToken,
-  authorizeRole(UserRole.ADMIN),
+  validaRole(UserRole.ADMIN),
   (req, res) => userController.update(req, res)
 );
 routes.delete(
   "/users/:id",
   validaToken,
-  authorizeRole(UserRole.ADMIN),
+  validaRole(UserRole.ADMIN),
   (req, res) => userController.delete(req, res)
 );
 

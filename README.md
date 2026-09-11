@@ -87,7 +87,7 @@ Content-Type: application/json
 
 ## Autenticação
 
-### Middleware `ensureAuthenticated`
+### Middleware `validaToken`
 
 As rotas protegidas requerem um token JWT válido no header da requisição.
 
@@ -120,6 +120,52 @@ Authorization: Bearer <token>
 - `PUT /users/:id`
 - `DELETE /users/:id`
 
+---
+
+## Autorização Baseada em Funções (RBAC) — RF09
+
+O controle de acesso é feito pelo middleware `validaRole`, executado após o `validaToken`. O middleware lê o perfil (`role`) do usuário autenticado, presente no payload do token JWT, e verifica se ele está entre os perfis permitidos para a rota.
+
+Se o perfil do usuário **não** tiver permissão, o middleware retorna o status **403 (Forbidden)**.
+
+### Perfis de Acesso
+
+| Perfil       | Valor       | Descrição                                         |
+|--------------|-------------|---------------------------------------------------|
+| Administrador| `admin`     | Acesso completo às funcionalidades da API         |
+| Atendente    | `atendente` | Acesso operacional, com permissões restritas      |
+| Usuário      | `user`      | Perfil padrão no cadastro                         |
+| Moderador    | `moderator` | Perfil intermediário                              |
+
+### Matriz de Permissões
+
+| Rota             | admin | atendente | user | moderator |
+|------------------|-------|-----------|------|-----------|
+| `GET /users`     | ✔     | ✔         | ✘    | ✘         |
+| `GET /users/:id` | ✔     | ✔         | ✘    | ✘         |
+| `POST /users`    | ✔     | ✘         | ✘    | ✘         |
+| `PUT /users/:id` | ✔     | ✘         | ✘    | ✘         |
+| `DELETE /users/:id` | ✔  | ✘         | ✘    | ✘         |
+
+**Erros possíveis (acesso negado):**
+| Status | Mensagem  |
+|--------|-----------|
+| 401    | Unauthorized |
+| 403    | Forbidden |
+
+### Restrição de Perfil no Cadastro Público
+
+O endpoint `POST /auth/register` aceita o campo `role` opcional, porém **não** permite que um usuário se autoregistre com perfis privilegiados (`admin` ou `moderator`). Os únicos perfis autoatribuíveis são `user` e `atendente`.
+
+**Erros possíveis:**
+| Status | Mensagem                    |
+|--------|-----------------------------|
+| 403    | Cannot register with this role |
+
+> **Nota:** para criar um usuário `admin`, um Administrador autenticado deve usar `POST /users` (permitido apenas para o perfil `admin`).
+
+---
+
 ## Endpoints
 
 ### Autenticação
@@ -136,9 +182,12 @@ Content-Type: application/json
 {
   "name": "João Silva",
   "email": "joao@email.com",
-  "password": "senha123"
+  "password": "senha123",
+  "role": "atendente"
 }
 ```
+
+> O campo `role` é **opcional** (padrão: `user`). Perfis permitidos no cadastro público: `user` e `atendente`. Perfis `admin` e `moderator` não podem ser autoatribuídos no cadastro (retorna 403).
 
 **Response (201):**
 ```json
@@ -146,7 +195,7 @@ Content-Type: application/json
   "id": 1,
   "name": "João Silva",
   "email": "joao@email.com",
-  "role": "user",
+  "role": "atendente",
   "created_at": "2025-01-01T00:00:00.000Z"
 }
 ```
@@ -155,6 +204,7 @@ Content-Type: application/json
 - Campos `name`, `email` e `password` são obrigatórios
 - Formato de e-mail deve ser válido
 - E-mail não pode estar duplicado
+- Perfil autoatribuído pode ser apenas `user` ou `atendente`
 
 **Erros possíveis:**
 | Status | Mensagem                      |
@@ -162,6 +212,7 @@ Content-Type: application/json
 | 400    | Name, email and password are required |
 | 400    | Invalid email format          |
 | 400    | Email already in use           |
+| 403    | Cannot register with this role |
 
 ---
 
@@ -221,7 +272,9 @@ Content-Type: application/json
 **Headers:**
 ```
 Content-Type: application/json
+Authorization: Bearer <token>
 ```
+> Requer perfil: **admin** ou **atendente**
 
 **Response (200):**
 ```json
@@ -236,6 +289,12 @@ Content-Type: application/json
 ]
 ```
 
+**Erros possíveis:**
+| Status | Mensagem       |
+|--------|----------------|
+| 401    | Token not provided |
+| 403    | Forbidden      |
+
 ---
 
 #### `GET /users/:id` — Buscar usuário por ID
@@ -243,7 +302,9 @@ Content-Type: application/json
 **Headers:**
 ```
 Content-Type: application/json
+Authorization: Bearer <token>
 ```
+> Requer perfil: **admin** ou **atendente**
 
 **Response (200):**
 ```json
@@ -259,6 +320,8 @@ Content-Type: application/json
 **Erros possíveis:**
 | Status | Mensagem      |
 |--------|---------------|
+| 401    | Token not provided |
+| 403    | Forbidden     |
 | 404    | User not found |
 
 ---
@@ -268,7 +331,9 @@ Content-Type: application/json
 **Headers:**
 ```
 Content-Type: application/json
+Authorization: Bearer <token>
 ```
+> Requer perfil: **admin**
 
 **Request:**
 ```json
@@ -294,6 +359,8 @@ Content-Type: application/json
 **Erros possíveis:**
 | Status | Mensagem              |
 |--------|-----------------------|
+| 401    | Token not provided    |
+| 403    | Forbidden             |
 | 400    | Email already in use   |
 
 ---
@@ -303,7 +370,9 @@ Content-Type: application/json
 **Headers:**
 ```
 Content-Type: application/json
+Authorization: Bearer <token>
 ```
+> Requer perfil: **admin**
 
 **Request:**
 ```json
@@ -326,6 +395,8 @@ Content-Type: application/json
 **Erros possíveis:**
 | Status | Mensagem      |
 |--------|---------------|
+| 401    | Token not provided |
+| 403    | Forbidden     |
 | 404    | User not found |
 
 ---
@@ -335,13 +406,17 @@ Content-Type: application/json
 **Headers:**
 ```
 Content-Type: application/json
+Authorization: Bearer <token>
 ```
+> Requer perfil: **admin**
 
 **Response (204):** Sem conteúdo
 
 **Erros possíveis:**
 | Status | Mensagem      |
 |--------|---------------|
+| 401    | Token not provided |
+| 403    | Forbidden     |
 | 404    | User not found |
 
 ---
@@ -350,14 +425,14 @@ Content-Type: application/json
 
 Tabela `users`:
 
-| Coluna      | Tipo        | Restrições       | Descrição                    |
-|-------------|-------------|------------------|------------------------------|
-| id          | SERIAL      | PK, auto-gerado  | Identificador único          |
-| name        | VARCHAR(255)| NOT NULL         | Nome do usuário              |
-| email       | VARCHAR(255)| NOT NULL, UNIQUE | E-mail do usuário            |
-| password    | VARCHAR(255)| NOT NULL         | Senha com hash bcrypt        |
-| role        | VARCHAR(50) | DEFAULT 'user'   | Perfil: admin, user, moderator |
-| created_at  | TIMESTAMP   | DEFAULT NOW()    | Data de criação do registro  |
+| Coluna      | Tipo        | Restrições       | Descrição                         |
+|-------------|-------------|------------------|-----------------------------------|
+| id          | SERIAL      | PK, auto-gerado  | Identificador único               |
+| name        | VARCHAR(255)| NOT NULL         | Nome do usuário                   |
+| email       | VARCHAR(255)| NOT NULL, UNIQUE | E-mail do usuário                 |
+| password    | VARCHAR(255)| NOT NULL         | Senha com hash bcrypt             |
+| role        | VARCHAR(50) | DEFAULT 'user'   | Perfil: admin, atendente, user, moderator |
+| created_at  | TIMESTAMP   | DEFAULT NOW()    | Data de criação do registro       |
 
 **Schema SQL** disponível em `src/database/schema.sql`.
 

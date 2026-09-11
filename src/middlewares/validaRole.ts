@@ -7,7 +7,7 @@ import { Response, NextFunction } from "express";
 import { AuthRequest } from "./validaToken";
 
 // Fábrica de middleware: recebe os perfis permitidos e retorna o middleware de autorização
-export function authorizeRole(...allowedRoles: string[]) {
+export function validaRole(...allowedRoles: string[]) {
   return (req: AuthRequest, res: Response, next: NextFunction): Response | void => {
     // Usuário não autenticado (não deve ocorrer após o validaToken)
     if (!req.user) {
