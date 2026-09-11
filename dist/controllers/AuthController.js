@@ -14,6 +14,12 @@ class AuthController {
         const user = await this.authService.register({ name, email, password });
         return res.status(201).json(user);
     }
+    // POST /auth/login — valida credenciais e retorna token JWT
+    async login(req, res) {
+        const { email, password } = req.body;
+        const result = await this.authService.login({ email, password });
+        return res.json(result);
+    }
 }
 exports.AuthController = AuthController;
 //# sourceMappingURL=AuthController.js.map

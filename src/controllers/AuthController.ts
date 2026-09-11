@@ -13,4 +13,11 @@ export class AuthController {
     const user = await this.authService.register({ name, email, password });
     return res.status(201).json(user);
   }
+
+  // POST /auth/login — valida credenciais e retorna token JWT
+  async login(req: Request, res: Response): Promise<Response> {
+    const { email, password } = req.body;
+    const result = await this.authService.login({ email, password });
+    return res.json(result);
+  }
 }

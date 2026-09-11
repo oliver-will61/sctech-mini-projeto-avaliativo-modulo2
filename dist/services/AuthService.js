@@ -1,12 +1,13 @@
 "use strict";
 // Service responsável pela autenticação e cadastro de usuários
-// Contém as validações de registro e o hash da senha antes de salvar no banco
+// Contém as validações de registro, login e o hash da senha antes de salvar no banco
 var __importDefault = (this && this.__importDefault) || function (mod) {
     return (mod && mod.__esModule) ? mod : { "default": mod };
 };
 Object.defineProperty(exports, "__esModule", { value: true });
 exports.AuthService = void 0;
 const bcrypt_1 = __importDefault(require("bcrypt"));
+const jsonwebtoken_1 = __importDefault(require("jsonwebtoken"));
 const UserRepository_1 = require("../repositories/UserRepository");
 const AppError_1 = require("../utils/AppError");
 class AuthService {
@@ -42,6 +43,30 @@ class AuthService {
         // Remove a senha do objeto antes de retornar (nunca expor a senha)
         const { password: _, ...userWithoutPassword } = user;
         return userWithoutPassword;
+    }
+    // Valida as credenciais do usuário e retorna um token JWT
+    // Em caso de credenciais inválidas, retorna erro 401 genérico
+    async login(data) {
+        const { email, password } = data;
+        // Verifica se os campos foram preenchidos
+        if (!email || !password) {
+            throw new AppError_1.AppError("Email and password are required", 400);
+        }
+        // Busca o usuário pelo e-mail incluindo a senha (select: false na entidade)
+        const user = await this.userRepository.findByEmailWithPassword(email);
+        // Se não encontrar ou a senha não bater, retorna erro genérico (não informa qual campo)
+        if (!user) {
+            throw new AppError_1.AppError("Invalid credentials", 401);
+        }
+        const passwordMatch = await bcrypt_1.default.compare(password, user.password);
+        if (!passwordMatch) {
+            throw new AppError_1.AppError("Invalid credentials", 401);
+        }
+        // Gera o token JWT com id e role do usuário
+        const token = jsonwebtoken_1.default.sign({ id: user.id, role: user.role }, process.env.JWT_SECRET, { expiresIn: process.env.JWT_EXPIRATION || "1d" });
+        // Remove a senha do retorno
+        const { password: _, ...userWithoutPassword } = user;
+        return { user: userWithoutPassword, token };
     }
 }
 exports.AuthService = AuthService;

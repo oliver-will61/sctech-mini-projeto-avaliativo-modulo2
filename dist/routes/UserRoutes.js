@@ -12,6 +12,7 @@ const userController = new UserController_1.UserController();
 const authController = new AuthController_1.AuthController();
 // Rotas de autenticação
 routes.post("/auth/register", (req, res) => authController.register(req, res));
+routes.post("/auth/login", (req, res) => authController.login(req, res));
 // Rotas de gerenciamento de usuários (CRUD)
 routes.get("/users", (req, res) => userController.index(req, res));
 routes.get("/users/:id", (req, res) => userController.show(req, res));

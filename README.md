@@ -53,14 +53,16 @@ psql -U postgres -c "CREATE DATABASE \"sctech-mini-projeto-avaliativo-modulo2\";
 
 Arquivo `.env`:
 
-| Variável    | Descrição              | Padrão                       |
-|-------------|------------------------|------------------------------|
-| DB_HOST     | Host do PostgreSQL     | localhost                    |
-| DB_PORT     | Porta do PostgreSQL    | 5432                         |
-| DB_NAME     | Nome do banco de dados | sctech-mini-projeto-avaliativo-modulo2 |
-| DB_USER     | Usuário do PostgreSQL  | postgres                     |
-| DB_PASSWORD | Senha do PostgreSQL    | 123456                       |
-| PORT        | Porta do servidor      | 3000                         |
+| Variável      | Descrição              | Padrão                       |
+|---------------|------------------------|------------------------------|
+| DB_HOST       | Host do PostgreSQL     | localhost                    |
+| DB_PORT       | Porta do PostgreSQL    | 5432                         |
+| DB_NAME       | Nome do banco de dados | sctech-mini-projeto-avaliativo-modulo2 |
+| DB_USER       | Usuário do PostgreSQL  | postgres                     |
+| DB_PASSWORD   | Senha do PostgreSQL    | 123456                       |
+| JWT_SECRET    | Chave secreta para JWT | sua_chave_secreta_aqui       |
+| JWT_EXPIRATION| Tempo de expiração do token | 1d                       |
+| PORT          | Porta do servidor      | 3000                         |
 
 ## Scripts
 
@@ -125,6 +127,55 @@ Content-Type: application/json
 | 400    | Name, email and password are required |
 | 400    | Invalid email format          |
 | 400    | Email already in use           |
+
+---
+
+### Login
+
+#### `POST /auth/login` — Autenticar usuário e retornar token JWT
+
+**Headers:**
+```
+Content-Type: application/json
+```
+
+**Request:**
+```json
+{
+  "email": "joao@email.com",
+  "password": "senha123"
+}
+```
+
+**Response (200):**
+```json
+{
+  "user": {
+    "id": 1,
+    "name": "João Silva",
+    "email": "joao@email.com",
+    "role": "user",
+    "created_at": "2025-01-01T00:00:00.000Z"
+  },
+  "token": "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9..."
+}
+```
+
+**Validações:**
+- Campos `email` e `password` são obrigatórios
+- E-mail deve estar cadastrado no sistema
+- Senha deve corresponder ao hash armazenado
+
+**Erros possíveis:**
+| Status | Mensagem              |
+|--------|-----------------------|
+| 400    | Email and password are required |
+| 401    | Invalid credentials   |
+
+**Token JWT:**
+- Contém `id` e `role` do usuário
+- Expiração definida na variável `JWT_EXPIRATION` (padrão: 1 dia)
+- Deve ser enviado no header `Authorization: Bearer <token>` nas rotas protegidas
 
 ---
 
@@ -403,6 +454,74 @@ Banco armazena: "$2b$10$N9qo8uLOickgx2ZMRZoMye..."
 │                       RESPOSTA AO CLIENTE                           │
 │   201 Created                                                       │
 │   { id: 1, name: "João", email: "joao@email.com", role: "user" }   │
+│   (password NÃO é retornada)                                        │
+└─────────────────────────────────────────────────────────────────────┘
+```
+
+### Login (`POST /auth/login`)
+
+```
+┌─────────────────────────────────────────────────────────────────────┐
+│                         CLIENTE (Frontend)                          │
+│   POST /auth/login                                                  │
+│   Body: { email, password }                                         │
+└──────────────────────────────┬──────────────────────────────────────┘
+                               │
+                               ▼
+┌─────────────────────────────────────────────────────────────────────┐
+│                          USER ROUTES                                │
+│   routes.post("/auth/login", authController.login)                  │
+└──────────────────────────────┬──────────────────────────────────────┘
+                               │
+                               ▼
+┌─────────────────────────────────────────────────────────────────────┐
+│                       AUTH CONTROLLER                               │
+│   Extrai dados do req.body: { email, password }                     │
+└──────────────────────────────┬──────────────────────────────────────┘
+                               │
+                               ▼
+┌─────────────────────────────────────────────────────────────────────┐
+│                        AUTH SERVICE                                 │
+│   1. Valida campos obrigatórios (email, password)                   │
+│   2. Busca usuário pelo e-mail (findByEmailWithPassword)           │
+│   3. Se não encontrar → lança AppError(401)                         │
+│   4. Compara senha: bcrypt.compare(password, hash)                  │
+│   5. Se não bater → lança AppError(401)                             │
+│   6. Gera token JWT: jwt.sign({ id, role }, secret, { expiresIn })  │
+│   7. Remove password do objeto antes de retornar                    │
+└──────────────────────────────┬──────────────────────────────────────┘
+                               │
+                               ▼
+┌─────────────────────────────────────────────────────────────────────┐
+│                       USER REPOSITORY                               │
+│   findByEmailWithPassword(email):                                   │
+│   1. Usa QueryBuilder para selecionar password (select: false)      │
+│   2. Retorna usuário com senha para comparação                      │
+└──────────────────────────────┬──────────────────────────────────────┘
+                               │
+                               ▼
+┌─────────────────────────────────────────────────────────────────────┐
+│                     BANCO DE DADOS (PostgreSQL)                     │
+│   SELECT id, name, email, password, role FROM users                 │
+│   WHERE email = 'joao@email.com'                                    │
+└──────────────────────────────┬──────────────────────────────────────┘
+                               │
+                               ▼
+┌─────────────────────────────────────────────────────────────────────┐
+│                       GERAÇÃO DO TOKEN JWT                          │
+│   Payload: { id: 1, role: "user" }                                  │
+│   Secret: variável JWT_SECRET                                       │
+│   Expiração: variável JWT_EXPIRATION (padrão: 1d)                   │
+└──────────────────────────────┬──────────────────────────────────────┘
+                               │
+                               ▼
+┌─────────────────────────────────────────────────────────────────────┐
+│                       RESPOSTA AO CLIENTE                           │
+│   200 OK                                                            │
+│   {                                                                 │
+│     "user": { id: 1, name: "João", email: "joao@email.com", ... }, │
+│     "token": "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9..."             │
+│   }                                                                 │
 │   (password NÃO é retornada)                                        │
 └─────────────────────────────────────────────────────────────────────┘
 ```
