@@ -110,7 +110,6 @@ Authorization: Bearer <token>
 | 401    | Invalid or expired token |
 
 **Rotas públicas (não requerem token):**
-- `POST /auth/register`
 - `POST /auth/login`
 
 **Rotas protegidas (requerem token):**
@@ -153,70 +152,11 @@ Se o perfil do usuário **não** tiver permissão, o middleware retorna o status
 | 401    | Unauthorized |
 | 403    | Forbidden |
 
-### Restrição de Perfil no Cadastro Público
-
-O endpoint `POST /auth/register` aceita o campo `role` opcional, porém **não** permite que um usuário se autoregistre com perfis privilegiados (`admin` ou `moderator`). Os únicos perfis autoatribuíveis são `user` e `atendente`.
-
-**Erros possíveis:**
-| Status | Mensagem                    |
-|--------|-----------------------------|
-| 403    | Cannot register with this role |
-
-> **Nota:** para criar um usuário `admin`, um Administrador autenticado deve usar `POST /users` (permitido apenas para o perfil `admin`).
-
 ---
 
 ## Endpoints
 
 ### Autenticação
-
-#### `POST /auth/register` — Cadastrar novo usuário
-
-**Headers:**
-```
-Content-Type: application/json
-```
-
-**Request:**
-```json
-{
-  "name": "João Silva",
-  "email": "joao@email.com",
-  "password": "senha123",
-  "role": "atendente"
-}
-```
-
-> O campo `role` é **opcional** (padrão: `user`). Perfis permitidos no cadastro público: `user` e `atendente`. Perfis `admin` e `moderator` não podem ser autoatribuídos no cadastro (retorna 403).
-
-**Response (201):**
-```json
-{
-  "id": 1,
-  "name": "João Silva",
-  "email": "joao@email.com",
-  "role": "atendente",
-  "created_at": "2025-01-01T00:00:00.000Z"
-}
-```
-
-**Validações:**
-- Campos `name`, `email` e `password` são obrigatórios
-- Formato de e-mail deve ser válido
-- E-mail não pode estar duplicado
-- Perfil autoatribuído pode ser apenas `user` ou `atendente`
-
-**Erros possíveis:**
-| Status | Mensagem                      |
-|--------|-------------------------------|
-| 400    | Name, email and password are required |
-| 400    | Invalid email format          |
-| 400    | Email already in use           |
-| 403    | Cannot register with this role |
-
----
-
-### Login
 
 #### `POST /auth/login` — Autenticar usuário e retornar token JWT
 
@@ -488,61 +428,6 @@ Banco armazena: "$2b$10$N9qo8uLOickgx2ZMRZoMye..."
 │   3. Gera hash da senha: bcrypt.hash(password, 10)                  │
 │   4. Chama repository.create() com dados + senha hasheada           │
 │   5. Remove password do objeto antes de retornar                    │
-└──────────────────────────────┬──────────────────────────────────────┘
-                               │
-                               ▼
-┌─────────────────────────────────────────────────────────────────────┐
-│                       USER REPOSITORY                               │
-│   1. Cria instância da entidade: repository.create(data)            │
-│   2. Salva no banco: repository.save(user)                          │
-└──────────────────────────────┬──────────────────────────────────────┘
-                               │
-                               ▼
-┌─────────────────────────────────────────────────────────────────────┐
-│                     BANCO DE DADOS (PostgreSQL)                     │
-│   INSERT INTO users (name, email, password, role)                   │
-│   VALUES ('João', 'joao@email.com', '$2b$10$...', 'user')           │
-└──────────────────────────────┬──────────────────────────────────────┘
-                               │
-                               ▼
-┌─────────────────────────────────────────────────────────────────────┐
-│                       RESPOSTA AO CLIENTE                           │
-│   201 Created                                                       │
-│   { id: 1, name: "João", email: "joao@email.com", role: "user" }   │
-│   (password NÃO é retornada)                                        │
-└─────────────────────────────────────────────────────────────────────┘
-```
-
-### Cadastro via Auth (`POST /auth/register`)
-
-```
-┌─────────────────────────────────────────────────────────────────────┐
-│                         CLIENTE (Frontend)                          │
-│   POST /auth/register                                               │
-│   Body: { name, email, password }                                   │
-└──────────────────────────────┬──────────────────────────────────────┘
-                               │
-                               ▼
-┌─────────────────────────────────────────────────────────────────────┐
-│                          USER ROUTES                                │
-│   routes.post("/auth/register", authController.register)            │
-└──────────────────────────────┬──────────────────────────────────────┘
-                               │
-                               ▼
-┌─────────────────────────────────────────────────────────────────────┐
-│                       AUTH CONTROLLER                               │
-│   Extrai dados do req.body: { name, email, password }               │
-└──────────────────────────────┬──────────────────────────────────────┘
-                               │
-                               ▼
-┌─────────────────────────────────────────────────────────────────────┐
-│                        AUTH SERVICE                                 │
-│   1. Valida campos obrigatórios (name, email, password)             │
-│   2. Valida formato do e-mail com regex                             │
-│   3. Verifica se e-mail já existe (findByEmail)                     │
-│   4. Gera hash da senha: bcrypt.hash(password, 10)                  │
-│   5. Cria usuário no banco                                          │
-│   6. Remove password do objeto antes de retornar                    │
 └──────────────────────────────┬──────────────────────────────────────┘
                                │
                                ▼

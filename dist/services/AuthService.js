@@ -1,6 +1,6 @@
 "use strict";
-// Service responsável pela autenticação e cadastro de usuários
-// Contém as validações de registro, login e o hash da senha antes de salvar no banco
+// Service responsável pela autenticação de usuários
+// Contém a validação de login e geração de token JWT
 var __importDefault = (this && this.__importDefault) || function (mod) {
     return (mod && mod.__esModule) ? mod : { "default": mod };
 };
@@ -10,45 +10,9 @@ const bcrypt_1 = __importDefault(require("bcrypt"));
 const jsonwebtoken_1 = __importDefault(require("jsonwebtoken"));
 const UserRepository_1 = require("../repositories/UserRepository");
 const AppError_1 = require("../utils/AppError");
-const User_1 = require("../entities/User");
 class AuthService {
     constructor() {
         this.userRepository = new UserRepository_1.UserRepository();
-    }
-    // Cadastra um novo usuário no sistema
-    // Valida campos obrigatórios, formato do e-mail, duplicidade e armazena a senha com hash
-    async register(data) {
-        const { name, email, password, role } = data;
-        // Verifica se todos os campos obrigatórios foram preenchidos
-        if (!name || !email || !password) {
-            throw new AppError_1.AppError("Name, email and password are required", 400);
-        }
-        // Impede que um usuário se cadastre sozinho com perfis privilegiados (ex.: admin)
-        if (role && !AuthService.ALLOWED_SELF_REGISTER_ROLES.includes(role)) {
-            throw new AppError_1.AppError("Cannot register with this role", 403);
-        }
-        // Valida o formato do e-mail usando expressão regular
-        const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
-        if (!emailRegex.test(email)) {
-            throw new AppError_1.AppError("Invalid email format", 400);
-        }
-        // Verifica se já existe um usuário com este e-mail
-        const existingUser = await this.userRepository.findByEmail(email);
-        if (existingUser) {
-            throw new AppError_1.AppError("Email already in use", 400);
-        }
-        // Gera o hash da senha com bcrypt (custo 10 rounds)
-        const hashedPassword = await bcrypt_1.default.hash(password, 10);
-        // Cria o usuário no banco com a senha hasheada
-        const user = await this.userRepository.create({
-            name,
-            email,
-            password: hashedPassword,
-            ...(role && { role }),
-        });
-        // Remove a senha do objeto antes de retornar (nunca expor a senha)
-        const { password: _, ...userWithoutPassword } = user;
-        return userWithoutPassword;
     }
     // Valida as credenciais do usuário e retorna um token JWT
     // Em caso de credenciais inválidas, retorna erro 401 genérico
@@ -62,7 +26,7 @@ class AuthService {
         const user = await this.userRepository.findByEmailWithPassword(email);
         // Se não encontrar ou a senha não bater, retorna erro genérico (não informa qual campo)
         if (!user) {
-            throw new AppError_1.AppError("Invalid credentiaols", 401);
+            throw new AppError_1.AppError("Invalid credentials", 401);
         }
         const passwordMatch = await bcrypt_1.default.compare(password, user.password);
         if (!passwordMatch) {
@@ -76,10 +40,4 @@ class AuthService {
     }
 }
 exports.AuthService = AuthService;
-// Perfis que podem ser autoatribuídos no cadastro público
-// Admin e Moderator só podem ser atribuídos por um Admin já autenticado (via POST /users)
-AuthService.ALLOWED_SELF_REGISTER_ROLES = [
-    User_1.UserRole.USER,
-    User_1.UserRole.ATTENDANT,
-];
 //# sourceMappingURL=AuthService.js.map

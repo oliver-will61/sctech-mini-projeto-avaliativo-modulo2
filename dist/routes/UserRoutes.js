@@ -15,7 +15,6 @@ exports.routes = routes;
 const userController = new UserController_1.UserController();
 const authController = new AuthController_1.AuthController();
 // Rotas públicas (não requerem autenticação)
-routes.post("/auth/register", (0, asyncHandler_1.asyncHandler)((req, res) => authController.register(req, res)));
 routes.post("/auth/login", (0, asyncHandler_1.asyncHandler)((req, res) => authController.login(req, res)));
 // Rotas protegidas (requerem token JWT válido)
 // RBAC: leitura permitida para Admin e Atendente; escrita/exclusão apenas para Admin

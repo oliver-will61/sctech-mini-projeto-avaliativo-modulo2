@@ -8,12 +8,6 @@ class AuthController {
     constructor() {
         this.authService = new AuthService_1.AuthService();
     }
-    // POST /auth/register — cadastra um novo usuário no sistema
-    async register(req, res) {
-        const { name, email, password, role } = req.body;
-        const user = await this.authService.register({ name, email, password, role });
-        return res.status(201).json(user);
-    }
     // POST /auth/login — valida credenciais e retorna token JWT
     async login(req, res) {
         const { email, password } = req.body;

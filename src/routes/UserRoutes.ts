@@ -14,7 +14,6 @@ const userController = new UserController();
 const authController = new AuthController();
 
 // Rotas públicas (não requerem autenticação)
-routes.post("/auth/register", asyncHandler((req, res) => authController.register(req, res)));
 routes.post("/auth/login", asyncHandler((req, res) => authController.login(req, res)));
 
 // Rotas protegidas (requerem token JWT válido)
