@@ -10,6 +10,7 @@ const bcrypt_1 = __importDefault(require("bcrypt"));
 const jsonwebtoken_1 = __importDefault(require("jsonwebtoken"));
 const UserRepository_1 = require("../repositories/UserRepository");
 const AppError_1 = require("../utils/AppError");
+const User_1 = require("../entities/User");
 class AuthService {
     constructor() {
         this.userRepository = new UserRepository_1.UserRepository();
@@ -21,6 +22,10 @@ class AuthService {
         // Verifica se todos os campos obrigatórios foram preenchidos
         if (!name || !email || !password) {
             throw new AppError_1.AppError("Name, email and password are required", 400);
+        }
+        // Impede que um usuário se cadastre sozinho com perfis privilegiados (ex.: admin)
+        if (role && !AuthService.ALLOWED_SELF_REGISTER_ROLES.includes(role)) {
+            throw new AppError_1.AppError("Cannot register with this role", 403);
         }
         // Valida o formato do e-mail usando expressão regular
         const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
@@ -71,4 +76,10 @@ class AuthService {
     }
 }
 exports.AuthService = AuthService;
+// Perfis que podem ser autoatribuídos no cadastro público
+// Admin e Moderator só podem ser atribuídos por um Admin já autenticado (via POST /users)
+AuthService.ALLOWED_SELF_REGISTER_ROLES = [
+    User_1.UserRole.USER,
+    User_1.UserRole.ATTENDANT,
+];
 //# sourceMappingURL=AuthService.js.map

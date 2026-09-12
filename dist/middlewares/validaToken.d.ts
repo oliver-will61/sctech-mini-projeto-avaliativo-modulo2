@@ -5,5 +5,5 @@ export interface AuthRequest extends Request {
         role: string;
     };
 }
-export declare function validaToken(req: AuthRequest, res: Response, next: NextFunction): Response | void;
+export declare function validaToken(req: AuthRequest, res: Response, next: NextFunction): void;
 //# sourceMappingURL=validaToken.d.ts.map

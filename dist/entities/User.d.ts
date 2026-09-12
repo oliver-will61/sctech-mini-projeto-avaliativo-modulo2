@@ -1,6 +1,7 @@
 import "reflect-metadata";
 export declare enum UserRole {
     ADMIN = "admin",
+    ATTENDANT = "atendente",
     USER = "user",
     MODERATOR = "moderator"
 }

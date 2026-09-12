@@ -1,5 +1,6 @@
 export declare class AuthService {
     private userRepository;
+    private static readonly ALLOWED_SELF_REGISTER_ROLES;
     register(data: {
         name: string;
         email: string;

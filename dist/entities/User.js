@@ -15,9 +15,11 @@ exports.User = exports.UserRole = void 0;
 require("reflect-metadata");
 const typeorm_1 = require("typeorm");
 // Enum que define os perfis de acesso permitidos no sistema
+// Admin possui acesso completo; Atendente possui acesso operacional restrito
 var UserRole;
 (function (UserRole) {
     UserRole["ADMIN"] = "admin";
+    UserRole["ATTENDANT"] = "atendente";
     UserRole["USER"] = "user";
     UserRole["MODERATOR"] = "moderator";
 })(UserRole || (exports.UserRole = UserRole = {}));

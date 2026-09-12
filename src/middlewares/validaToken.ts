@@ -1,8 +1,10 @@
 // Middleware responsável por validar o token JWT enviado nas requisições
 // Impede o acesso a rotas protegidas quando o token estiver ausente, inválido ou expirado
+// Lança AppError que é capturado pelo errorHandler middleware
 
 import { Request, Response, NextFunction } from "express";
 import jwt from "jsonwebtoken";
+import { AppError } from "../utils/AppError";
 
 // Estende a interface Request do Express para incluir o payload do token
 export interface AuthRequest extends Request {
@@ -16,13 +18,13 @@ export function validaToken(
   req: AuthRequest,
   res: Response,
   next: NextFunction
-): Response | void {
+): void {
   // Obtém o header Authorization da requisição
   const authHeader = req.headers.authorization;
 
   // Verifica se o header existe e se começa com "Bearer "
   if (!authHeader || !authHeader.startsWith("Bearer ")) {
-    return res.status(401).json({ error: "Token not provided" });
+    throw new AppError("Token not provided", 401);
   }
 
   // Extrai o token (remove "Bearer " do início)
@@ -42,9 +44,9 @@ export function validaToken(
     };
 
     // Continua para a próxima função/middleware
-    return next();
+    next();
   } catch (error) {
     // Token inválido ou expirado
-    return res.status(401).json({ error: "Invalid or expired token" });
+    throw new AppError("Invalid or expired token", 401);
   }
 }
