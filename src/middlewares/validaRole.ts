@@ -17,7 +17,7 @@ export function validaRole(...allowedRoles: string[]) {
 
     // Perfil do usuário não possui permissão para esta rota
     if (!allowedRoles.includes(req.user.role)) {
-      throw new AppError("Forbidden: o perfil do usuário não possui permissão para essa acão", 403);
+      throw new AppError("Forbidden: o perfil do usuário não possui permissão para essa ação", 403);
     }
 
     next();

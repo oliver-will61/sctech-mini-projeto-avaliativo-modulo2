@@ -14,7 +14,7 @@ function validaToken(req, res, next) {
     const authHeader = req.headers.authorization;
     // Verifica se o header existe e se começa com "Bearer "
     if (!authHeader || !authHeader.startsWith("Bearer ")) {
-        throw new AppError_1.AppError("Token not provided", 401);
+        throw new AppError_1.AppError("Token não fornecido", 401);
     }
     // Extrai o token (remove "Bearer " do início)
     const token = authHeader.split(" ")[1];
@@ -31,7 +31,7 @@ function validaToken(req, res, next) {
     }
     catch (error) {
         // Token inválido ou expirado
-        throw new AppError_1.AppError("Invalid or expired token", 401);
+        throw new AppError_1.AppError("Token invalido ou expirado", 401);
     }
 }
 //# sourceMappingURL=validaToken.js.map

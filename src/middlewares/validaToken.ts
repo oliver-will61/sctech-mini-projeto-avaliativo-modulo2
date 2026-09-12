@@ -24,7 +24,7 @@ export function validaToken(
 
   // Verifica se o header existe e se começa com "Bearer "
   if (!authHeader || !authHeader.startsWith("Bearer ")) {
-    throw new AppError("Token not provided", 401);
+    throw new AppError("Token não fornecido", 401);
   }
 
   // Extrai o token (remove "Bearer " do início)
@@ -47,6 +47,6 @@ export function validaToken(
     next();
   } catch (error) {
     // Token inválido ou expirado
-    throw new AppError("Invalid or expired token", 401);
+    throw new AppError("Token invalido ou expirado", 401);
   }
 }
