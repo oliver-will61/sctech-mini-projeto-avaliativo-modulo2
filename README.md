@@ -113,6 +113,8 @@ Authorization: Bearer <token>
 - `POST /auth/login`
 
 **Rotas protegidas (requerem token):**
+- `GET /users/me` — retorna dados do usuário autenticado
+- `GET /admin/ping` — verifica RBAC (apenas admin)
 - `GET /users`
 - `GET /users/:id`
 - `POST /users`
@@ -138,13 +140,15 @@ Se o perfil do usuário **não** tiver permissão, o middleware retorna o status
 
 ### Matriz de Permissões
 
-| Rota             | admin | atendente | user | moderator |
-|------------------|-------|-----------|------|-----------|
-| `GET /users`     | ✔     | ✔         | ✘    | ✘         |
-| `GET /users/:id` | ✔     | ✔         | ✘    | ✘         |
-| `POST /users`    | ✔     | ✘         | ✘    | ✘         |
-| `PUT /users/:id` | ✔     | ✘         | ✘    | ✘         |
-| `DELETE /users/:id` | ✔  | ✘         | ✘    | ✘         |
+| Rota               | admin | atendente | user | moderator |
+|--------------------|-------|-----------|------|-----------|
+| `GET /users/me`    | ✔     | ✔         | ✔    | ✔         |
+| `GET /admin/ping`  | ✔     | ✘         | ✘    | ✘         |
+| `GET /users`       | ✔     | ✔         | ✘    | ✘         |
+| `GET /users/:id`   | ✔     | ✔         | ✘    | ✘         |
+| `POST /users`      | ✔     | ✘         | ✘    | ✘         |
+| `PUT /users/:id`   | ✔     | ✘         | ✘    | ✘         |
+| `DELETE /users/:id` | ✔     | ✘         | ✘    | ✘         |
 
 **Erros possíveis (acesso negado):**
 | Status | Mensagem  |
@@ -202,6 +206,62 @@ Content-Type: application/json
 - Contém `id` e `role` do usuário
 - Expiração definida na variável `JWT_EXPIRATION` (padrão: 1 dia)
 - Deve ser enviado no header `Authorization: Bearer <token>` nas rotas protegidas
+
+---
+
+### Verificação de Autenticação/Autorização (RF10)
+
+#### `GET /users/me` — Retorna dados do usuário autenticado
+
+**Headers:**
+```
+Content-Type: application/json
+Authorization: Bearer <token>
+```
+> Requer autenticação (qualquer perfil)
+
+**Response (200):**
+```json
+{
+  "id": 1,
+  "name": "Admin",
+  "email": "admin@email.com",
+  "role": "admin",
+  "created_at": "2025-01-01T00:00:00.000Z"
+}
+```
+
+**Erros possíveis:**
+| Status | Mensagem              |
+|--------|-----------------------|
+| 401    | Token not provided    |
+| 401    | Invalid or expired token |
+| 404    | User not found        |
+
+---
+
+#### `GET /admin/ping` — Verifica funcionamento do RBAC
+
+**Headers:**
+```
+Content-Type: application/json
+Authorization: Bearer <token>
+```
+> Requer perfil: **admin**
+
+**Response (200):**
+```json
+{
+  "message": "Pong! Admin autenticado com sucesso."
+}
+```
+
+**Erros possíveis:**
+| Status | Mensagem              |
+|--------|-----------------------|
+| 401    | Token not provided    |
+| 401    | Invalid or expired token |
+| 403    | Forbidden             |
 
 ---
 

@@ -1,10 +1,12 @@
-import { Request, Response } from "express";
+import { Response } from "express";
+import { AuthRequest } from "../middlewares/validaToken";
 export declare class UserController {
     private userService;
-    index(req: Request, res: Response): Promise<Response>;
-    show(req: Request, res: Response): Promise<Response>;
-    store(req: Request, res: Response): Promise<Response>;
-    update(req: Request, res: Response): Promise<Response>;
-    delete(req: Request, res: Response): Promise<Response>;
+    me(req: AuthRequest, res: Response): Promise<Response>;
+    index(req: AuthRequest, res: Response): Promise<Response>;
+    show(req: AuthRequest, res: Response): Promise<Response>;
+    store(req: AuthRequest, res: Response): Promise<Response>;
+    update(req: AuthRequest, res: Response): Promise<Response>;
+    delete(req: AuthRequest, res: Response): Promise<Response>;
 }
 //# sourceMappingURL=UserController.d.ts.map

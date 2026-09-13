@@ -9,6 +9,11 @@ class UserController {
     constructor() {
         this.userService = new UserService_1.UserService();
     }
+    // GET /users/me — retorna os dados do usuário autenticado a partir do token
+    async me(req, res) {
+        const user = await this.userService.findById(req.user.id);
+        return res.json(user);
+    }
     // GET /users — lista todos os usuários
     async index(req, res) {
         const users = await this.userService.findAll();

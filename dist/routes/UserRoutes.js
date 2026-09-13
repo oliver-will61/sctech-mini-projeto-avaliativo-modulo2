@@ -16,7 +16,12 @@ const userController = new UserController_1.UserController();
 const authController = new AuthController_1.AuthController();
 // Rotas públicas (não requerem autenticação)
 routes.post("/auth/login", (0, asyncHandler_1.asyncHandler)((req, res) => authController.login(req, res)));
-// Rotas protegidas (requerem token JWT válido)
+// Rotas protegidas —RF10: verificação de autenticação/autorização
+routes.get("/users/me", validaToken_1.validaToken, (0, asyncHandler_1.asyncHandler)((req, res) => userController.me(req, res)));
+routes.get("/admin/ping", validaToken_1.validaToken, (0, validaRole_1.validaRole)(User_1.UserRole.ADMIN), (0, asyncHandler_1.asyncHandler)(async (req, res) => {
+    return res.json({ message: "Pong! Admin autenticado com sucesso." });
+}));
+// Rotas protegidas — CRUD de usuários
 // RBAC: leitura permitida para Admin e Atendente; escrita/exclusão apenas para Admin
 routes.get("/users", validaToken_1.validaToken, (0, validaRole_1.validaRole)(User_1.UserRole.ADMIN, User_1.UserRole.ATTENDANT), (0, asyncHandler_1.asyncHandler)((req, res) => userController.index(req, res)));
 routes.get("/users/:id", validaToken_1.validaToken, (0, validaRole_1.validaRole)(User_1.UserRole.ADMIN, User_1.UserRole.ATTENDANT), (0, asyncHandler_1.asyncHandler)((req, res) => userController.show(req, res)));
