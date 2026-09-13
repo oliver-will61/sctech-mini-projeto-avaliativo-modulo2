@@ -361,7 +361,7 @@ Authorization: Bearer <token>
 |--------|-----------------------|
 | 401    | Token não fornecido    |
 | 403    | Proibido             |
-| 400    | E-mail já cadastrado   |
+| 409    | E-mail já cadastrado   |
 
 ---
 

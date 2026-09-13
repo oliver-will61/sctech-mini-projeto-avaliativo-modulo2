@@ -35,7 +35,7 @@ class UserService {
     async create(data) {
         const existingUser = await this.userRepository.findByEmail(data.email);
         if (existingUser) {
-            throw new AppError_1.AppError("E-mail já cadastrado", 400);
+            throw new AppError_1.AppError("E-mail já cadastrado", 409);
         }
         // Gera o hash da senha com bcrypt (custo 10 rounds)
         if (data.password) {
