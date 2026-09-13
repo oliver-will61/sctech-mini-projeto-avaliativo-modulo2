@@ -3,6 +3,7 @@
 
 import { Request, Response } from "express";
 import { AuthService } from "../services/AuthService";
+import { LoginDTO } from "../dto/LoginDTO";
 
 export class AuthController {
   private authService = new AuthService();
@@ -10,7 +11,8 @@ export class AuthController {
   // POST /auth/login — valida credenciais e retorna token JWT
   async login(req: Request, res: Response): Promise<Response> {
     const { email, password } = req.body;
-    const result = await this.authService.login({ email, password });
+    const dto: LoginDTO = { email, password };
+    const result = await this.authService.login(dto);
     return res.json(result);
   }
 }

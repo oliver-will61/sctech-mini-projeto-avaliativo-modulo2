@@ -16,7 +16,8 @@ class UserService {
     }
     // Retorna todos os usuários cadastrados
     async findAll() {
-        return this.userRepository.findAll();
+        const users = await this.userRepository.findAll();
+        return users.map(({ password: _, ...user }) => user);
     }
     // Busca um usuário pelo ID, lança erro se não encontrar
     async findById(id) {
@@ -24,7 +25,8 @@ class UserService {
         if (!user) {
             throw new AppError_1.AppError("Usuário não encontrado", 404);
         }
-        return user;
+        const { password: _, ...userWithoutPassword } = user;
+        return userWithoutPassword;
     }
     // Busca um usuário pelo e-mail
     async findByEmail(email) {
@@ -38,10 +40,13 @@ class UserService {
             throw new AppError_1.AppError("E-mail já cadastrado", 409);
         }
         // Gera o hash da senha com bcrypt (custo 10 rounds)
-        if (data.password) {
-            data.password = await bcrypt_1.default.hash(data.password, 10);
-        }
-        const user = await this.userRepository.create(data);
+        const hashedPassword = await bcrypt_1.default.hash(data.password, 10);
+        const user = await this.userRepository.create({
+            name: data.name,
+            email: data.email,
+            password: hashedPassword,
+            role: data.role,
+        });
         // Remove a senha do objeto antes de retornar (nunca expor a senha)
         const { password: _, ...userWithoutPassword } = user;
         return userWithoutPassword;
@@ -50,11 +55,13 @@ class UserService {
     // Se uma nova senha for enviada, ela é hasheada antes de ser salva
     async update(id, data) {
         await this.findById(id);
+        const updateData = { ...data };
         if (data.password) {
-            data.password = await bcrypt_1.default.hash(data.password, 10);
+            updateData.password = await bcrypt_1.default.hash(data.password, 10);
         }
-        const user = await this.userRepository.update(id, data);
-        return user;
+        const user = await this.userRepository.update(id, updateData);
+        const { password: _, ...userWithoutPassword } = user;
+        return userWithoutPassword;
     }
     // Remove um usuário (verifica se existe antes de remover)
     async delete(id) {

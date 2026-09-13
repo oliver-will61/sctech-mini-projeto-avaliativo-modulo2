@@ -5,13 +5,15 @@ import bcrypt from "bcrypt";
 import jwt from "jsonwebtoken";
 import { UserRepository } from "../repositories/UserRepository";
 import { AppError } from "../utils/AppError";
+import { LoginDTO } from "../dto/LoginDTO";
+import { UserResponseDTO } from "../dto/UserResponseDTO";
 
 export class AuthService {
   private userRepository = new UserRepository();
 
   // Valida as credenciais do usuário e retorna um token JWT
   // Em caso de credenciais inválidas, retorna erro 401 genérico
-  async login(data: { email: string; password: string }) {
+  async login(data: LoginDTO): Promise<{ user: UserResponseDTO; token: string }> {
     const { email, password } = data;
 
     // Verifica se os campos foram preenchidos
@@ -41,6 +43,6 @@ export class AuthService {
 
     // Remove a senha do retorno
     const { password: _, ...userWithoutPassword } = user as any;
-    return { user: userWithoutPassword, token };
+    return { user: userWithoutPassword as UserResponseDTO, token };
   }
 }

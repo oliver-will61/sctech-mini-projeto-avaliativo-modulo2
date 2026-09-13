@@ -6,22 +6,27 @@ import bcrypt from "bcrypt";
 import { User } from "../entities/User";
 import { UserRepository } from "../repositories/UserRepository";
 import { AppError } from "../utils/AppError";
+import { CreateUserDTO } from "../dto/CreateUserDTO";
+import { UpdateUserDTO } from "../dto/UpdateUserDTO";
+import { UserResponseDTO } from "../dto/UserResponseDTO";
 
 export class UserService {
   private userRepository = new UserRepository();
 
   // Retorna todos os usuários cadastrados
-  async findAll(): Promise<User[]> {
-    return this.userRepository.findAll();
+  async findAll(): Promise<UserResponseDTO[]> {
+    const users = await this.userRepository.findAll();
+    return users.map(({ password: _, ...user }) => user as UserResponseDTO);
   }
 
   // Busca um usuário pelo ID, lança erro se não encontrar
-  async findById(id: number): Promise<User> {
+  async findById(id: number): Promise<UserResponseDTO> {
     const user = await this.userRepository.findById(id);
     if (!user) {
       throw new AppError("Usuário não encontrado", 404);
     }
-    return user;
+    const { password: _, ...userWithoutPassword } = user as any;
+    return userWithoutPassword as UserResponseDTO;
   }
 
   // Busca um usuário pelo e-mail
@@ -31,35 +36,41 @@ export class UserService {
 
   // Cria um novo usuário após verificar se o e-mail já está em uso
   // A senha é armazenada apenas com hash (bcrypt), nunca em texto puro
-  async create(data: Partial<User>): Promise<User> {
-    const existingUser = await this.userRepository.findByEmail(data.email!);
+  async create(data: CreateUserDTO): Promise<UserResponseDTO> {
+    const existingUser = await this.userRepository.findByEmail(data.email);
     if (existingUser) {
       throw new AppError("E-mail já cadastrado", 409);
     }
 
     // Gera o hash da senha com bcrypt (custo 10 rounds)
-    if (data.password) {
-      data.password = await bcrypt.hash(data.password, 10);
-    }
+    const hashedPassword = await bcrypt.hash(data.password, 10);
 
-    const user = await this.userRepository.create(data);
+    const user = await this.userRepository.create({
+      name: data.name,
+      email: data.email,
+      password: hashedPassword,
+      role: data.role,
+    });
 
     // Remove a senha do objeto antes de retornar (nunca expor a senha)
     const { password: _, ...userWithoutPassword } = user as any;
-    return userWithoutPassword as User;
+    return userWithoutPassword as UserResponseDTO;
   }
 
   // Atualiza um usuário (verifica se existe antes de atualizar)
   // Se uma nova senha for enviada, ela é hasheada antes de ser salva
-  async update(id: number, data: Partial<User>): Promise<User> {
+  async update(id: number, data: UpdateUserDTO): Promise<UserResponseDTO> {
     await this.findById(id);
 
+    const updateData: Partial<User> = { ...data };
+
     if (data.password) {
-      data.password = await bcrypt.hash(data.password, 10);
+      updateData.password = await bcrypt.hash(data.password, 10);
     }
 
-    const user = await this.userRepository.update(id, data);
-    return user!;
+    const user = await this.userRepository.update(id, updateData);
+    const { password: _, ...userWithoutPassword } = user as any;
+    return userWithoutPassword as UserResponseDTO;
   }
 
   // Remove um usuário (verifica se existe antes de remover)

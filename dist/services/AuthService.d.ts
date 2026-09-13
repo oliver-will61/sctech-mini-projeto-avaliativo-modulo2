@@ -1,10 +1,9 @@
+import { LoginDTO } from "../dto/LoginDTO";
+import { UserResponseDTO } from "../dto/UserResponseDTO";
 export declare class AuthService {
     private userRepository;
-    login(data: {
-        email: string;
-        password: string;
-    }): Promise<{
-        user: any;
+    login(data: LoginDTO): Promise<{
+        user: UserResponseDTO;
         token: string;
     }>;
 }

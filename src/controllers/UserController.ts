@@ -5,6 +5,8 @@
 import { Response } from "express";
 import { UserService } from "../services/UserService";
 import { AuthRequest } from "../middlewares/validaToken";
+import { CreateUserDTO } from "../dto/CreateUserDTO";
+import { UpdateUserDTO } from "../dto/UpdateUserDTO";
 
 export class UserController {
   private userService = new UserService();
@@ -30,13 +32,15 @@ export class UserController {
   // POST /users — cria um novo usuário
   async store(req: AuthRequest, res: Response): Promise<Response> {
     const { name, email, password, role } = req.body;
-    const user = await this.userService.create({ name, email, password, role });
+    const dto: CreateUserDTO = { name, email, password, role };
+    const user = await this.userService.create(dto);
     return res.status(201).json(user);
   }
 
   // PUT /users/:id — atualiza um usuário
   async update(req: AuthRequest, res: Response): Promise<Response> {
-    const user = await this.userService.update(Number(req.params.id), req.body);
+    const dto: UpdateUserDTO = req.body;
+    const user = await this.userService.update(Number(req.params.id), dto);
     return res.json(user);
   }
 

@@ -27,12 +27,14 @@ class UserController {
     // POST /users — cria um novo usuário
     async store(req, res) {
         const { name, email, password, role } = req.body;
-        const user = await this.userService.create({ name, email, password, role });
+        const dto = { name, email, password, role };
+        const user = await this.userService.create(dto);
         return res.status(201).json(user);
     }
     // PUT /users/:id — atualiza um usuário
     async update(req, res) {
-        const user = await this.userService.update(Number(req.params.id), req.body);
+        const dto = req.body;
+        const user = await this.userService.update(Number(req.params.id), dto);
         return res.json(user);
     }
     // DELETE /users/:id — remove um usuário

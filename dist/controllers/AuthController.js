@@ -11,7 +11,8 @@ class AuthController {
     // POST /auth/login — valida credenciais e retorna token JWT
     async login(req, res) {
         const { email, password } = req.body;
-        const result = await this.authService.login({ email, password });
+        const dto = { email, password };
+        const result = await this.authService.login(dto);
         return res.json(result);
     }
 }
