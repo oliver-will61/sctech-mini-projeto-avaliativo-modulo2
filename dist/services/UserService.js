@@ -10,6 +10,7 @@ exports.UserService = void 0;
 const bcrypt_1 = __importDefault(require("bcrypt"));
 const UserRepository_1 = require("../repositories/UserRepository");
 const AppError_1 = require("../utils/AppError");
+const removePassword_1 = require("../utils/removePassword");
 class UserService {
     constructor() {
         this.userRepository = new UserRepository_1.UserRepository();
@@ -17,7 +18,7 @@ class UserService {
     // Retorna todos os usuários cadastrados
     async findAll() {
         const users = await this.userRepository.findAll();
-        return users.map(({ password: _, ...user }) => user);
+        return users.map(removePassword_1.removePassword);
     }
     // Busca um usuário pelo ID, lança erro se não encontrar
     async findById(id) {
@@ -25,8 +26,7 @@ class UserService {
         if (!user) {
             throw new AppError_1.AppError("Usuário não encontrado", 404);
         }
-        const { password: _, ...userWithoutPassword } = user;
-        return userWithoutPassword;
+        return (0, removePassword_1.removePassword)(user);
     }
     // Busca um usuário pelo e-mail
     async findByEmail(email) {
@@ -48,8 +48,7 @@ class UserService {
             role: data.role,
         });
         // Remove a senha do objeto antes de retornar (nunca expor a senha)
-        const { password: _, ...userWithoutPassword } = user;
-        return userWithoutPassword;
+        return (0, removePassword_1.removePassword)(user);
     }
     // Atualiza um usuário (verifica se existe antes de atualizar)
     // Se uma nova senha for enviada, ela é hasheada antes de ser salva
@@ -60,8 +59,7 @@ class UserService {
             updateData.password = await bcrypt_1.default.hash(data.password, 10);
         }
         const user = await this.userRepository.update(id, updateData);
-        const { password: _, ...userWithoutPassword } = user;
-        return userWithoutPassword;
+        return (0, removePassword_1.removePassword)(user);
     }
     // Remove um usuário (verifica se existe antes de remover)
     async delete(id) {

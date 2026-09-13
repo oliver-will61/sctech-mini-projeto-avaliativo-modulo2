@@ -9,6 +9,7 @@ import { AppError } from "../utils/AppError";
 import { CreateUserDTO } from "../dto/CreateUserDTO";
 import { UpdateUserDTO } from "../dto/UpdateUserDTO";
 import { UserResponseDTO } from "../dto/UserResponseDTO";
+import { removePassword } from "../utils/removePassword";
 
 export class UserService {
   private userRepository = new UserRepository();
@@ -16,7 +17,7 @@ export class UserService {
   // Retorna todos os usuários cadastrados
   async findAll(): Promise<UserResponseDTO[]> {
     const users = await this.userRepository.findAll();
-    return users.map(({ password: _, ...user }) => user as UserResponseDTO);
+    return users.map(removePassword);
   }
 
   // Busca um usuário pelo ID, lança erro se não encontrar
@@ -25,8 +26,7 @@ export class UserService {
     if (!user) {
       throw new AppError("Usuário não encontrado", 404);
     }
-    const { password: _, ...userWithoutPassword } = user as any;
-    return userWithoutPassword as UserResponseDTO;
+    return removePassword(user);
   }
 
   // Busca um usuário pelo e-mail
@@ -53,8 +53,7 @@ export class UserService {
     });
 
     // Remove a senha do objeto antes de retornar (nunca expor a senha)
-    const { password: _, ...userWithoutPassword } = user as any;
-    return userWithoutPassword as UserResponseDTO;
+    return removePassword(user);
   }
 
   // Atualiza um usuário (verifica se existe antes de atualizar)
@@ -69,8 +68,7 @@ export class UserService {
     }
 
     const user = await this.userRepository.update(id, updateData);
-    const { password: _, ...userWithoutPassword } = user as any;
-    return userWithoutPassword as UserResponseDTO;
+    return removePassword(user!);
   }
 
   // Remove um usuário (verifica se existe antes de remover)

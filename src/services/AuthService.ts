@@ -7,6 +7,7 @@ import { UserRepository } from "../repositories/UserRepository";
 import { AppError } from "../utils/AppError";
 import { LoginDTO } from "../dto/LoginDTO";
 import { UserResponseDTO } from "../dto/UserResponseDTO";
+import { removePassword } from "../utils/removePassword";
 
 export class AuthService {
   private userRepository = new UserRepository();
@@ -42,7 +43,6 @@ export class AuthService {
     );
 
     // Remove a senha do retorno
-    const { password: _, ...userWithoutPassword } = user as any;
-    return { user: userWithoutPassword as UserResponseDTO, token };
+    return { user: removePassword(user), token };
   }
 }

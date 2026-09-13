@@ -10,6 +10,7 @@ const bcrypt_1 = __importDefault(require("bcrypt"));
 const jsonwebtoken_1 = __importDefault(require("jsonwebtoken"));
 const UserRepository_1 = require("../repositories/UserRepository");
 const AppError_1 = require("../utils/AppError");
+const removePassword_1 = require("../utils/removePassword");
 class AuthService {
     constructor() {
         this.userRepository = new UserRepository_1.UserRepository();
@@ -35,8 +36,7 @@ class AuthService {
         // Gera o token JWT com id e role do usuário  
         const token = jsonwebtoken_1.default.sign({ id: user.id, role: user.role }, process.env.JWT_SECRET, { expiresIn: process.env.JWT_EXPIRATION || "1d" });
         // Remove a senha do retorno
-        const { password: _, ...userWithoutPassword } = user;
-        return { user: userWithoutPassword, token };
+        return { user: (0, removePassword_1.removePassword)(user), token };
     }
 }
 exports.AuthService = AuthService;
