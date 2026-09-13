@@ -106,8 +106,8 @@ Authorization: Bearer <token>
 **Erros possíveis:**
 | Status | Mensagem              |
 |--------|-----------------------|
-| 401    | Token not provided    |
-| 401    | Invalid or expired token |
+| 401    | Token não fornecido    |
+| 401    | Token inválido ou expirado |
 
 **Rotas públicas (não requerem token):**
 - `POST /auth/login`
@@ -127,7 +127,7 @@ Authorization: Bearer <token>
 
 O controle de acesso é feito pelo middleware `validaRole`, executado após o `validaToken`. O middleware lê o perfil (`role`) do usuário autenticado, presente no payload do token JWT, e verifica se ele está entre os perfis permitidos para a rota.
 
-Se o perfil do usuário **não** tiver permissão, o middleware retorna o status **403 (Forbidden)**.
+Se o perfil do usuário **não** tiver permissão, o middleware retorna o status **403 (Proibido)**.
 
 ### Perfis de Acesso
 
@@ -153,8 +153,8 @@ Se o perfil do usuário **não** tiver permissão, o middleware retorna o status
 **Erros possíveis (acesso negado):**
 | Status | Mensagem  |
 |--------|-----------|
-| 401    | Unauthorized |
-| 403    | Forbidden |
+| 401    | Não autorizado |
+| 403    | Proibido |
 
 ---
 
@@ -199,8 +199,8 @@ Content-Type: application/json
 **Erros possíveis:**
 | Status | Mensagem              |
 |--------|-----------------------|
-| 400    | Email and password are required |
-| 401    | Invalid credentials   |
+| 400    | E-mail e senha são obrigatórios |
+| 401    | Credenciais inválidas   |
 
 **Token JWT:**
 - Contém `id` e `role` do usuário
@@ -234,9 +234,9 @@ Authorization: Bearer <token>
 **Erros possíveis:**
 | Status | Mensagem              |
 |--------|-----------------------|
-| 401    | Token not provided    |
-| 401    | Invalid or expired token |
-| 404    | User not found        |
+| 401    | Token não fornecido    |
+| 401    | Token inválido ou expirado |
+| 404    | Usuário não encontrado        |
 
 ---
 
@@ -259,9 +259,9 @@ Authorization: Bearer <token>
 **Erros possíveis:**
 | Status | Mensagem              |
 |--------|-----------------------|
-| 401    | Token not provided    |
-| 401    | Invalid or expired token |
-| 403    | Forbidden             |
+| 401    | Token não fornecido    |
+| 401    | Token inválido ou expirado |
+| 403    | Proibido             |
 
 ---
 
@@ -292,8 +292,8 @@ Authorization: Bearer <token>
 **Erros possíveis:**
 | Status | Mensagem       |
 |--------|----------------|
-| 401    | Token not provided |
-| 403    | Forbidden      |
+| 401    | Token não fornecido |
+| 403    | Proibido      |
 
 ---
 
@@ -320,9 +320,9 @@ Authorization: Bearer <token>
 **Erros possíveis:**
 | Status | Mensagem      |
 |--------|---------------|
-| 401    | Token not provided |
-| 403    | Forbidden     |
-| 404    | User not found |
+| 401    | Token não fornecido |
+| 403    | Proibido     |
+| 404    | Usuário não encontrado |
 
 ---
 
@@ -359,9 +359,9 @@ Authorization: Bearer <token>
 **Erros possíveis:**
 | Status | Mensagem              |
 |--------|-----------------------|
-| 401    | Token not provided    |
-| 403    | Forbidden             |
-| 400    | Email already in use   |
+| 401    | Token não fornecido    |
+| 403    | Proibido             |
+| 400    | E-mail já cadastrado   |
 
 ---
 
@@ -395,9 +395,9 @@ Authorization: Bearer <token>
 **Erros possíveis:**
 | Status | Mensagem      |
 |--------|---------------|
-| 401    | Token not provided |
-| 403    | Forbidden     |
-| 404    | User not found |
+| 401    | Token não fornecido |
+| 403    | Proibido     |
+| 404    | Usuário não encontrado |
 
 ---
 
@@ -415,9 +415,9 @@ Authorization: Bearer <token>
 **Erros possíveis:**
 | Status | Mensagem      |
 |--------|---------------|
-| 401    | Token not provided |
-| 403    | Forbidden     |
-| 404    | User not found |
+| 401    | Token não fornecido |
+| 403    | Proibido     |
+| 404    | Usuário não encontrado |
 
 ---
 

@@ -16,7 +16,7 @@ export class AuthService {
 
     // Verifica se os campos foram preenchidos
     if (!email || !password) {
-      throw new AppError("Email and password are required", 400);
+      throw new AppError("E-mail e senha são obrigatórios", 400);
     }
 
     // Busca o usuário pelo e-mail incluindo a senha (select: false na entidade)
@@ -24,12 +24,12 @@ export class AuthService {
 
     // Se não encontrar ou a senha não bater, retorna erro genérico (não informa qual campo)
     if (!user) {
-      throw new AppError("Invalid credentials", 401);
+      throw new AppError("Credenciais inválidas", 401);
     }
 
     const passwordMatch = await bcrypt.compare(password, user.password);
     if (!passwordMatch) {
-      throw new AppError("Invalid credentials", 401);
+      throw new AppError("Credenciais inválidas", 401);
     }
 
     // Gera o token JWT com id e role do usuário  

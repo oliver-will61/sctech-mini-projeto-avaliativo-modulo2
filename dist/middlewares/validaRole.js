@@ -11,11 +11,11 @@ function validaRole(...allowedRoles) {
     return (req, res, next) => {
         // Usuário não autenticado (não deve ocorrer após o validaToken)
         if (!req.user) {
-            throw new AppError_1.AppError("Unauthorized: usuário não atenticado", 401);
+            throw new AppError_1.AppError("Não autorizado: usuário não autenticado", 401);
         }
         // Perfil do usuário não possui permissão para esta rota
         if (!allowedRoles.includes(req.user.role)) {
-            throw new AppError_1.AppError("Forbidden: o perfil do usuário não possui permissão para essa ação", 403);
+            throw new AppError_1.AppError("Proibido: o perfil do usuário não possui permissão para essa ação", 403);
         }
         next();
     };

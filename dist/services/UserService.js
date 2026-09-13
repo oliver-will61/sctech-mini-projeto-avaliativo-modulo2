@@ -22,7 +22,7 @@ class UserService {
     async findById(id) {
         const user = await this.userRepository.findById(id);
         if (!user) {
-            throw new AppError_1.AppError("User not found", 404);
+            throw new AppError_1.AppError("Usuário não encontrado", 404);
         }
         return user;
     }
@@ -35,7 +35,7 @@ class UserService {
     async create(data) {
         const existingUser = await this.userRepository.findByEmail(data.email);
         if (existingUser) {
-            throw new AppError_1.AppError("Email already in use", 400);
+            throw new AppError_1.AppError("E-mail já cadastrado", 400);
         }
         // Gera o hash da senha com bcrypt (custo 10 rounds)
         if (data.password) {

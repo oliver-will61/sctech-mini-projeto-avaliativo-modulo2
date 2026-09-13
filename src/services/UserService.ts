@@ -19,7 +19,7 @@ export class UserService {
   async findById(id: number): Promise<User> {
     const user = await this.userRepository.findById(id);
     if (!user) {
-      throw new AppError("User not found", 404);
+      throw new AppError("Usuário não encontrado", 404);
     }
     return user;
   }
@@ -34,7 +34,7 @@ export class UserService {
   async create(data: Partial<User>): Promise<User> {
     const existingUser = await this.userRepository.findByEmail(data.email!);
     if (existingUser) {
-      throw new AppError("Email already in use", 400);
+      throw new AppError("E-mail já cadastrado", 400);
     }
 
     // Gera o hash da senha com bcrypt (custo 10 rounds)

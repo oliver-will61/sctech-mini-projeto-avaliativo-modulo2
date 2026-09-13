@@ -18,5 +18,5 @@ export function errorHandler(
 
   // Se for um erro inesperado, loga no console e retorna erro 500
   console.error(err);
-  return res.status(500).json({ error: "Internal server error" });
+  return res.status(500).json({ error: "Erro interno do servidor" });
 }

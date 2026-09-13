@@ -20,17 +20,17 @@ class AuthService {
         const { email, password } = data;
         // Verifica se os campos foram preenchidos
         if (!email || !password) {
-            throw new AppError_1.AppError("Email and password are required", 400);
+            throw new AppError_1.AppError("E-mail e senha são obrigatórios", 400);
         }
         // Busca o usuário pelo e-mail incluindo a senha (select: false na entidade)
         const user = await this.userRepository.findByEmailWithPassword(email);
         // Se não encontrar ou a senha não bater, retorna erro genérico (não informa qual campo)
         if (!user) {
-            throw new AppError_1.AppError("Invalid credentials", 401);
+            throw new AppError_1.AppError("Credenciais inválidas", 401);
         }
         const passwordMatch = await bcrypt_1.default.compare(password, user.password);
         if (!passwordMatch) {
-            throw new AppError_1.AppError("Invalid credentials", 401);
+            throw new AppError_1.AppError("Credenciais inválidas", 401);
         }
         // Gera o token JWT com id e role do usuário  
         const token = jsonwebtoken_1.default.sign({ id: user.id, role: user.role }, process.env.JWT_SECRET, { expiresIn: process.env.JWT_EXPIRATION || "1d" });
