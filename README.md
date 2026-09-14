@@ -59,9 +59,9 @@ Arquivo `.env`:
 | DB_PORT       | Porta do PostgreSQL    | 5432                         |
 | DB_NAME       | Nome do banco de dados | sctech-mini-projeto-avaliativo-modulo2 |
 | DB_USER       | Usuário do PostgreSQL  | postgres                     |
-| DB_PASSWORD   | Senha do PostgreSQL    | 123456                       |
-| JWT_SECRET    | Chave secreta para JWT | sua_chave_secreta_aqui       |
-| JWT_EXPIRATION| Tempo de expiração do token | 1d                       |
+| DB_PASSWORD   | Senha do PostgreSQL    | Exemplo: 123456              |
+| JWT_SECRET    | Chave secreta para JWT | Exemplo: chave_secreta_aqui  |
+| JWT_EXPIRATION| Tempo de expiração do token | 1d                      |
 | PORT          | Porta do servidor      | 3000                         |
 
 ## Scripts
