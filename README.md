@@ -29,6 +29,7 @@ src/
 - **ORM:** TypeORM
 - **Banco de dados:** PostgreSQL
 - **Hash de senhas:** bcrypt
+- **Testes:** Jest + ts-jest
 
 ## Pré-requisitos
 
@@ -59,9 +60,9 @@ Arquivo `.env`:
 | DB_PORT       | Porta do PostgreSQL    | 5432                         |
 | DB_NAME       | Nome do banco de dados | sctech-mini-projeto-avaliativo-modulo2 |
 | DB_USER       | Usuário do PostgreSQL  | postgres                     |
-| DB_PASSWORD   | Senha do PostgreSQL    | 123456                       |
-| JWT_SECRET    | Chave secreta para JWT | sua_chave_secreta_aqui       |
-| JWT_EXPIRATION| Tempo de expiração do token | 1d                       |
+| DB_PASSWORD   | Senha do PostgreSQL    | Exemplo: 123456              |
+| JWT_SECRET    | Chave secreta para JWT | Exemplo: chave_secreta_aqui  |
+| JWT_EXPIRATION| Tempo de expiração do token | 1d                      |
 | PORT          | Porta do servidor      | 3000                         |
 
 ## Scripts
@@ -75,7 +76,17 @@ npm run build
 
 # Rodar a versão compilada
 npm start
+
+# Rodar os testes unitários
+npm test
+
+# Rodar os testes com relatório de cobertura (gerado em coverage/)
+npm run test:coverage
 ```
+
+## Testes
+
+Os testes unitários usam **Jest** com **ts-jest** e ficam na pasta `tests/` na raiz, espelhando a estrutura de `src/` (`controllers`, `services`, `repositories`, `middlewares`, `utils`). Cada camada é testada isoladamente, sem banco de dados: o repositório, o TypeORM, o bcrypt e os services são substituídos por mocks.
 
 ## Headers Padrão
 
