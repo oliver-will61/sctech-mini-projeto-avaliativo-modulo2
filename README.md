@@ -30,14 +30,40 @@ src/
 - **Banco de dados:** PostgreSQL
 - **Hash de senhas:** bcrypt
 - **Testes:** Jest + ts-jest
+- **Containers:** Docker + Docker Compose
 
-## Pré-requisitos
+## Rodando com Docker
+
+Pré-requisito: Docker com o plugin Docker Compose.
+
+```bash
+# Criar o arquivo de variáveis a partir do exemplo (e ajustar os valores)
+cp .env.example .env
+```
+
+```bash
+# Subir a API e o banco
+docker compose up
+```
+
+Sobe a API com hot reload (`ts-node-dev`) e um PostgreSQL. O código do projeto é montado no container, então qualquer alteração em `src/` reinicia o servidor automaticamente. O Docker é usado apenas para desenvolvimento.
+
+- API: `http://localhost:3000`
+- PostgreSQL: `localhost:5433` (porta 5433 para não conflitar com um PostgreSQL local)
+- Rodar os testes dentro do container: `docker compose exec api npm test`
+- Parar: `docker compose down` (com `-v` também apaga os dados do banco)
+
+> **Primeiro acesso:** a API não tem rota de cadastro público, e todas as rotas de escrita exigem um admin. O primeiro usuário admin precisa ser inserido direto no banco, com a senha em hash bcrypt.
+
+## Rodando sem Docker
+
+### Pré-requisitos
 
 - Node.js (v18+)
 - PostgreSQL instalado e rodando
 - npm
 
-## Instalação
+### Instalação
 
 ```bash
 # Instalar dependências
