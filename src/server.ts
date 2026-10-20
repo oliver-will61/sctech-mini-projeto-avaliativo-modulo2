@@ -5,6 +5,7 @@ import "dotenv/config";
 import express from "express";
 import { AppDataSource } from "./database/data-source";
 import { routes } from "./routes/UserRoutes";
+import { especialidadeRoutes } from "./routes/EspecialidadeRoutes";
 import { errorHandler } from "./middlewares/errorHandler";
 
 // Instância do Express
@@ -18,6 +19,7 @@ app.use(express.json());
 
 // Registra as rotas da aplicação
 app.use(routes);
+app.use(especialidadeRoutes);
 
 // Middleware global de tratamento de erros (deve ser registrado após as rotas)
 app.use(errorHandler);

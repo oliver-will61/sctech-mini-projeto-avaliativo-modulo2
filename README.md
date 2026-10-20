@@ -1,6 +1,6 @@
 # SC Tech - Mini Projeto Avaliativo Módulo 2
 
-API RESTful para gerenciamento de usuários com autenticação, construída com Node.js, TypeScript, Express e TypeORM.
+API RESTful para gerenciamento de usuários e especialidades médicas com autenticação, construída com Node.js, TypeScript, Express e TypeORM.
 
 ## Arquitetura
 
@@ -157,6 +157,11 @@ Authorization: Bearer <token>
 - `POST /users`
 - `PUT /users/:id`
 - `DELETE /users/:id`
+- `GET /especialidades`
+- `GET /especialidades/:id`
+- `POST /especialidades`
+- `PUT /especialidades/:id`
+- `DELETE /especialidades/:id`
 
 ---
 
@@ -186,6 +191,11 @@ Se o perfil do usuário **não** tiver permissão, o middleware retorna o status
 | `POST /users`      | ✔     | ✘         | ✘    | ✘         |
 | `PUT /users/:id`   | ✔     | ✘         | ✘    | ✘         |
 | `DELETE /users/:id` | ✔     | ✘         | ✘    | ✘         |
+| `GET /especialidades`        | ✔ | ✔ | ✘ | ✘ |
+| `GET /especialidades/:id`    | ✔ | ✔ | ✘ | ✘ |
+| `POST /especialidades`       | ✔ | ✘ | ✘ | ✘ |
+| `PUT /especialidades/:id`    | ✔ | ✘ | ✘ | ✘ |
+| `DELETE /especialidades/:id` | ✔ | ✘ | ✘ | ✘ |
 
 **Erros possíveis (acesso negado):**
 | Status | Mensagem  |
@@ -458,6 +468,164 @@ Authorization: Bearer <token>
 
 ---
 
+### Especialidades
+
+**Regras de negócio:**
+- O nome é obrigatório e **único**. A comparação ignora maiúsculas e minúsculas ("Cardiologia" e "cardiologia" são o mesmo nome), e os espaços nas pontas são removidos antes de salvar.
+- **Não é permitido remover** uma especialidade que possua médicos vinculados (uma especialidade possui N médicos).
+
+> **Observação:** a entidade Médico ainda não existe. A regra de remoção já está implementada no `EspecialidadeService` e coberta por testes, mas consulta o `MedicoRepository`, que por enquanto é provisório e sempre informa 0 médicos. Quando a entidade Médico for criada, basta implementar a contagem real em `src/repositories/MedicoRepository.ts`.
+
+#### `GET /especialidades` — Listar todas as especialidades
+
+**Headers:**
+```
+Content-Type: application/json
+Authorization: Bearer <token>
+```
+> Requer perfil: **admin** ou **atendente**
+
+**Response (200):** lista em ordem alfabética
+```json
+[
+  {
+    "id": 1,
+    "nome": "Cardiologia",
+    "descricao": "Diagnóstico e tratamento de doenças do coração"
+  }
+]
+```
+
+**Erros possíveis:**
+| Status | Mensagem       |
+|--------|----------------|
+| 401    | Token não fornecido |
+| 403    | Proibido      |
+
+---
+
+#### `GET /especialidades/:id` — Buscar especialidade por ID
+
+**Headers:**
+```
+Content-Type: application/json
+Authorization: Bearer <token>
+```
+> Requer perfil: **admin** ou **atendente**
+
+**Response (200):**
+```json
+{
+  "id": 1,
+  "nome": "Cardiologia",
+  "descricao": "Diagnóstico e tratamento de doenças do coração"
+}
+```
+
+**Erros possíveis:**
+| Status | Mensagem      |
+|--------|---------------|
+| 401    | Token não fornecido |
+| 403    | Proibido     |
+| 404    | Especialidade não encontrada |
+
+---
+
+#### `POST /especialidades` — Criar nova especialidade
+
+**Headers:**
+```
+Content-Type: application/json
+Authorization: Bearer <token>
+```
+> Requer perfil: **admin**
+
+**Request:**
+```json
+{
+  "nome": "Cardiologia",
+  "descricao": "Diagnóstico e tratamento de doenças do coração"
+}
+```
+> `descricao` é opcional.
+
+**Response (201):**
+```json
+{
+  "id": 1,
+  "nome": "Cardiologia",
+  "descricao": "Diagnóstico e tratamento de doenças do coração"
+}
+```
+
+**Erros possíveis:**
+| Status | Mensagem              |
+|--------|-----------------------|
+| 400    | O nome da especialidade é obrigatório |
+| 401    | Token não fornecido    |
+| 403    | Proibido             |
+| 409    | Já existe uma especialidade com esse nome |
+
+---
+
+#### `PUT /especialidades/:id` — Atualizar especialidade
+
+**Headers:**
+```
+Content-Type: application/json
+Authorization: Bearer <token>
+```
+> Requer perfil: **admin**
+
+**Request:** atualização parcial. Envie `nome`, `descricao` ou os dois.
+```json
+{
+  "descricao": "Nova descrição"
+}
+```
+
+**Response (200):**
+```json
+{
+  "id": 1,
+  "nome": "Cardiologia",
+  "descricao": "Nova descrição"
+}
+```
+
+**Erros possíveis:**
+| Status | Mensagem      |
+|--------|---------------|
+| 400    | Nenhum campo para atualizar |
+| 400    | O nome da especialidade é obrigatório |
+| 401    | Token não fornecido |
+| 403    | Proibido     |
+| 404    | Especialidade não encontrada |
+| 409    | Já existe uma especialidade com esse nome |
+
+---
+
+#### `DELETE /especialidades/:id` — Remover especialidade
+
+**Headers:**
+```
+Content-Type: application/json
+Authorization: Bearer <token>
+```
+> Requer perfil: **admin**
+
+**Response (204):** Sem conteúdo
+
+**Erros possíveis:**
+| Status | Mensagem      |
+|--------|---------------|
+| 401    | Token não fornecido |
+| 403    | Proibido     |
+| 404    | Especialidade não encontrada |
+| 409    | Não é possível remover uma especialidade com médicos vinculados |
+
+---
+
 ## Estrutura do Banco de Dados
 
 Tabela `users`:
@@ -470,6 +638,16 @@ Tabela `users`:
 | password    | VARCHAR(255)| NOT NULL         | Senha com hash bcrypt             |
 | role        | VARCHAR(50) | DEFAULT 'user'   | Perfil: admin, atendente, user, moderator |
 | created_at  | TIMESTAMP   | DEFAULT NOW()    | Data de criação do registro       |
+
+Tabela `especialidades`:
+
+| Coluna      | Tipo         | Restrições       | Descrição                         |
+|-------------|--------------|------------------|-----------------------------------|
+| id          | SERIAL       | PK, auto-gerado  | Identificador único               |
+| nome        | VARCHAR(100) | NOT NULL, UNIQUE | Nome da especialidade             |
+| descricao   | TEXT         | NULL             | Descrição da especialidade        |
+
+> Relacionamento: uma especialidade possui N médicos. A tabela de médicos, com a chave estrangeira para `especialidades`, será criada junto com a entidade Médico.
 
 **Schema SQL** disponível em `src/database/schema.sql`.
 
