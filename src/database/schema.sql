@@ -6,3 +6,9 @@ CREATE TABLE users (
     role VARCHAR(50) NOT NULL DEFAULT 'user',
     created_at TIMESTAMP NOT NULL DEFAULT NOW()
 );
+
+CREATE TABLE especialidades (
+    id SERIAL PRIMARY KEY,
+    nome VARCHAR(100) NOT NULL UNIQUE,
+    descricao TEXT
+);

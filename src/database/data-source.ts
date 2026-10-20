@@ -4,6 +4,7 @@
 import "reflect-metadata";
 import { DataSource } from "typeorm";
 import { User } from "../entities/User";
+import { Especialidade } from "../entities/Especialidade";
 
 export const AppDataSource = new DataSource({
   type: "postgres",
@@ -14,5 +15,5 @@ export const AppDataSource = new DataSource({
   database: process.env.DB_NAME,
   synchronize: true, // Cria/atualiza tabelas automaticamente baseado nas entidades (usar apenas em dev)
   logging: true, // Loga todas as queries SQL executadas no console
-  entities: [User], // Lista de entidades que o TypeORM deve mapear para tabelas
+  entities: [User, Especialidade], // Lista de entidades que o TypeORM deve mapear para tabelas
 });
