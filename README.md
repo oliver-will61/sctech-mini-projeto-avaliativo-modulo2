@@ -1,6 +1,6 @@
 # SC Tech - Mini Projeto Avaliativo Módulo 2
 
-API RESTful para gerenciamento de usuários e especialidades médicas com autenticação, construída com Node.js, TypeScript, Express e TypeORM.
+API RESTful para gerenciamento de usuários, especialidades médicas e médicos com autenticação, construída com Node.js, TypeScript, Express e TypeORM.
 
 ## Arquitetura
 
@@ -162,6 +162,11 @@ Authorization: Bearer <token>
 - `POST /especialidades`
 - `PUT /especialidades/:id`
 - `DELETE /especialidades/:id`
+- `GET /medicos`
+- `GET /medicos/:id`
+- `POST /medicos`
+- `PUT /medicos/:id`
+- `DELETE /medicos/:id`
 
 ---
 
@@ -196,6 +201,11 @@ Se o perfil do usuário **não** tiver permissão, o middleware retorna o status
 | `POST /especialidades`       | ✔ | ✘ | ✘ | ✘ |
 | `PUT /especialidades/:id`    | ✔ | ✘ | ✘ | ✘ |
 | `DELETE /especialidades/:id` | ✔ | ✘ | ✘ | ✘ |
+| `GET /medicos`               | ✔ | ✔ | ✘ | ✘ |
+| `GET /medicos/:id`           | ✔ | ✔ | ✘ | ✘ |
+| `POST /medicos`              | ✔ | ✘ | ✘ | ✘ |
+| `PUT /medicos/:id`           | ✔ | ✘ | ✘ | ✘ |
+| `DELETE /medicos/:id`        | ✔ | ✘ | ✘ | ✘ |
 
 **Erros possíveis (acesso negado):**
 | Status | Mensagem  |
@@ -472,9 +482,7 @@ Authorization: Bearer <token>
 
 **Regras de negócio:**
 - O nome é obrigatório e **único**. A comparação ignora maiúsculas e minúsculas ("Cardiologia" e "cardiologia" são o mesmo nome), e os espaços nas pontas são removidos antes de salvar.
-- **Não é permitido remover** uma especialidade que possua médicos vinculados (uma especialidade possui N médicos).
-
-> **Observação:** a entidade Médico ainda não existe. A regra de remoção já está implementada no `EspecialidadeService` e coberta por testes, mas consulta o `MedicoRepository`, que por enquanto é provisório e sempre informa 0 médicos. Quando a entidade Médico for criada, basta implementar a contagem real em `src/repositories/MedicoRepository.ts`.
+- **Não é permitido remover** uma especialidade que possua médicos vinculados (uma especialidade possui N médicos). O `EspecialidadeService` conta os médicos da especialidade antes de remover, e a chave estrangeira com `ON DELETE RESTRICT` reforça a regra no banco.
 
 #### `GET /especialidades` — Listar todas as especialidades
 
@@ -626,6 +634,187 @@ Authorization: Bearer <token>
 
 ---
 
+### Médicos
+
+**Regras de negócio:**
+- Todos os campos são obrigatórios: `nome`, `crm`, `email`, `telefone` e `especialidadeId`. Os espaços nas pontas dos textos são removidos antes de salvar.
+- O **CRM é único**. A comparação ignora maiúsculas e minúsculas ("12345/SC" e "12345/sc" são o mesmo CRM).
+- Todo médico deve estar vinculado a uma **especialidade existente** (`especialidadeId`).
+- As respostas trazem o objeto `especialidade` junto com o médico.
+
+#### `GET /medicos` — Listar todos os médicos
+
+**Headers:**
+```
+Content-Type: application/json
+Authorization: Bearer <token>
+```
+> Requer perfil: **admin** ou **atendente**
+
+**Response (200):** lista em ordem alfabética
+```json
+[
+  {
+    "id": 1,
+    "nome": "Dra. Ana Souza",
+    "crm": "12345/SC",
+    "email": "ana@clinica.com",
+    "telefone": "(48) 99999-0000",
+    "especialidadeId": 1,
+    "especialidade": {
+      "id": 1,
+      "nome": "Cardiologia",
+      "descricao": "Diagnóstico e tratamento de doenças do coração"
+    }
+  }
+]
+```
+
+**Erros possíveis:**
+| Status | Mensagem       |
+|--------|----------------|
+| 401    | Token não fornecido |
+| 403    | Proibido      |
+
+---
+
+#### `GET /medicos/:id` — Buscar médico por ID
+
+**Headers:**
+```
+Content-Type: application/json
+Authorization: Bearer <token>
+```
+> Requer perfil: **admin** ou **atendente**
+
+**Response (200):**
+```json
+{
+  "id": 1,
+  "nome": "Dra. Ana Souza",
+  "crm": "12345/SC",
+  "email": "ana@clinica.com",
+  "telefone": "(48) 99999-0000",
+  "especialidadeId": 1,
+  "especialidade": {
+    "id": 1,
+    "nome": "Cardiologia",
+    "descricao": "Diagnóstico e tratamento de doenças do coração"
+  }
+}
+```
+
+**Erros possíveis:**
+| Status | Mensagem      |
+|--------|---------------|
+| 401    | Token não fornecido |
+| 403    | Proibido     |
+| 404    | Médico não encontrado |
+
+---
+
+#### `POST /medicos` — Cadastrar novo médico
+
+**Headers:**
+```
+Content-Type: application/json
+Authorization: Bearer <token>
+```
+> Requer perfil: **admin**
+
+**Request:**
+```json
+{
+  "nome": "Dra. Ana Souza",
+  "crm": "12345/SC",
+  "email": "ana@clinica.com",
+  "telefone": "(48) 99999-0000",
+  "especialidadeId": 1
+}
+```
+
+**Response (201):**
+```json
+{
+  "id": 1,
+  "nome": "Dra. Ana Souza",
+  "crm": "12345/SC",
+  "email": "ana@clinica.com",
+  "telefone": "(48) 99999-0000",
+  "especialidadeId": 1,
+  "especialidade": {
+    "id": 1,
+    "nome": "Cardiologia",
+    "descricao": "Diagnóstico e tratamento de doenças do coração"
+  }
+}
+```
+
+**Erros possíveis:**
+| Status | Mensagem              |
+|--------|-----------------------|
+| 400    | O campo `<campo>` é obrigatório |
+| 400    | Informe uma especialidade válida (especialidadeId) |
+| 400    | A especialidade informada não existe |
+| 401    | Token não fornecido    |
+| 403    | Proibido             |
+| 409    | Já existe um médico com esse CRM |
+
+---
+
+#### `PUT /medicos/:id` — Atualizar médico
+
+**Headers:**
+```
+Content-Type: application/json
+Authorization: Bearer <token>
+```
+> Requer perfil: **admin**
+
+**Request:** atualização parcial. Envie apenas os campos que deseja alterar.
+```json
+{
+  "telefone": "(48) 3333-0000",
+  "especialidadeId": 2
+}
+```
+
+**Response (200):** o médico atualizado, no mesmo formato do `GET /medicos/:id`.
+
+**Erros possíveis:**
+| Status | Mensagem      |
+|--------|---------------|
+| 400    | Nenhum campo para atualizar |
+| 400    | O campo `<campo>` é obrigatório (campo enviado vazio) |
+| 400    | Informe uma especialidade válida (especialidadeId) |
+| 400    | A especialidade informada não existe |
+| 401    | Token não fornecido |
+| 403    | Proibido     |
+| 404    | Médico não encontrado |
+| 409    | Já existe um médico com esse CRM |
+
+---
+
+#### `DELETE /medicos/:id` — Remover médico
+
+**Headers:**
+```
+Content-Type: application/json
+Authorization: Bearer <token>
+```
+> Requer perfil: **admin**
+
+**Response (204):** Sem conteúdo
+
+**Erros possíveis:**
+| Status | Mensagem      |
+|--------|---------------|
+| 401    | Token não fornecido |
+| 403    | Proibido     |
+| 404    | Médico não encontrado |
+
+---
+
 ## Estrutura do Banco de Dados
 
 Tabela `users`:
@@ -647,7 +836,18 @@ Tabela `especialidades`:
 | nome        | VARCHAR(100) | NOT NULL, UNIQUE | Nome da especialidade             |
 | descricao   | TEXT         | NULL             | Descrição da especialidade        |
 
-> Relacionamento: uma especialidade possui N médicos. A tabela de médicos, com a chave estrangeira para `especialidades`, será criada junto com a entidade Médico.
+Tabela `medicos`:
+
+| Coluna           | Tipo         | Restrições                          | Descrição                    |
+|------------------|--------------|-------------------------------------|------------------------------|
+| id               | SERIAL       | PK, auto-gerado                     | Identificador único          |
+| nome             | VARCHAR(255) | NOT NULL                            | Nome do médico               |
+| crm              | VARCHAR(20)  | NOT NULL, UNIQUE                    | CRM do médico                |
+| email            | VARCHAR(255) | NOT NULL                            | E-mail de contato            |
+| telefone         | VARCHAR(20)  | NOT NULL                            | Telefone de contato          |
+| especialidade_id | INTEGER      | NOT NULL, FK → especialidades(id), ON DELETE RESTRICT | Especialidade do médico |
+
+> Relacionamento: uma especialidade possui N médicos (`especialidades 1 ── N medicos`). Na API, a coluna `especialidade_id` aparece como `especialidadeId`.
 
 **Schema SQL** disponível em `src/database/schema.sql`.
 

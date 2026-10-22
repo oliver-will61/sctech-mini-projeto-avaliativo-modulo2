@@ -2,7 +2,8 @@
 // Uma especialidade pode ter vários médicos vinculados (relação 1:N)
 
 import "reflect-metadata";
-import { Entity, PrimaryGeneratedColumn, Column } from "typeorm";
+import { Entity, PrimaryGeneratedColumn, Column, OneToMany } from "typeorm";
+import { Medico } from "./Medico";
 
 // Mapeia esta classe para a tabela "especialidades" no banco
 @Entity("especialidades")
@@ -19,7 +20,7 @@ export class Especialidade {
   @Column({ type: "text", nullable: true })
   descricao!: string | null;
 
-  // Relação 1:N com médicos — será adicionada quando a entidade Medico for criada:
-  // @OneToMany(() => Medico, (medico) => medico.especialidade)
-  // medicos!: Medico[];
+  // Médicos vinculados a esta especialidade (relação 1:N)
+  @OneToMany(() => Medico, (medico) => medico.especialidade)
+  medicos!: Medico[];
 }

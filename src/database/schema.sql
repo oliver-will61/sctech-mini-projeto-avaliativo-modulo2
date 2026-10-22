@@ -12,3 +12,12 @@ CREATE TABLE especialidades (
     nome VARCHAR(100) NOT NULL UNIQUE,
     descricao TEXT
 );
+
+CREATE TABLE medicos (
+    id SERIAL PRIMARY KEY,
+    nome VARCHAR(255) NOT NULL,
+    crm VARCHAR(20) NOT NULL UNIQUE,
+    email VARCHAR(255) NOT NULL,
+    telefone VARCHAR(20) NOT NULL,
+    especialidade_id INTEGER NOT NULL REFERENCES especialidades(id) ON DELETE RESTRICT
+);
