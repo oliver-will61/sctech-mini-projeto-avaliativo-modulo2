@@ -9,3 +9,5 @@ export { CreateEspecialidadeDTO } from "./CreateEspecialidadeDTO";
 export { UpdateEspecialidadeDTO } from "./UpdateEspecialidadeDTO";
 export { CreateMedicoDTO } from "./CreateMedicoDTO";
 export { UpdateMedicoDTO } from "./UpdateMedicoDTO";
+export { CreatePacienteDTO } from "./CreatePacienteDTO";
+export { UpdatePacienteDTO } from "./UpdatePacienteDTO";
