@@ -1,6 +1,6 @@
 # SC Tech - Mini Projeto Avaliativo Módulo 2
 
-API RESTful para gerenciamento de usuários, especialidades médicas e médicos com autenticação, construída com Node.js, TypeScript, Express e TypeORM.
+API RESTful para gerenciamento de usuários, especialidades médicas, médicos e pacientes com autenticação, construída com Node.js, TypeScript, Express e TypeORM.
 
 ## Arquitetura
 
@@ -15,7 +15,7 @@ src/
 ├── routes/          # Definição dos endpoints
 ├── middlewares/     # Middleware de tratamento de erros
 ├── database/        # Configuração da conexão com o banco
-└── utils/           # Utilitários (AppError)
+└── utils/           # Utilitários (AppError, validação de CPF, e-mail e data)
 ```
 
 **Fluxo de uma requisição:**
@@ -167,6 +167,11 @@ Authorization: Bearer <token>
 - `POST /medicos`
 - `PUT /medicos/:id`
 - `DELETE /medicos/:id`
+- `GET /pacientes`
+- `GET /pacientes/:id`
+- `POST /pacientes`
+- `PUT /pacientes/:id`
+- `DELETE /pacientes/:id`
 
 ---
 
@@ -206,6 +211,11 @@ Se o perfil do usuário **não** tiver permissão, o middleware retorna o status
 | `POST /medicos`              | ✔ | ✘ | ✘ | ✘ |
 | `PUT /medicos/:id`           | ✔ | ✘ | ✘ | ✘ |
 | `DELETE /medicos/:id`        | ✔ | ✘ | ✘ | ✘ |
+| `GET /pacientes`             | ✔ | ✔ | ✘ | ✘ |
+| `GET /pacientes/:id`         | ✔ | ✔ | ✘ | ✘ |
+| `POST /pacientes`            | ✔ | ✔ | ✘ | ✘ |
+| `PUT /pacientes/:id`         | ✔ | ✔ | ✘ | ✘ |
+| `DELETE /pacientes/:id`      | ✔ | ✘ | ✘ | ✘ |
 
 **Erros possíveis (acesso negado):**
 | Status | Mensagem  |
@@ -815,6 +825,173 @@ Authorization: Bearer <token>
 
 ---
 
+### Pacientes
+
+**Regras de negócio:**
+- Todos os campos são obrigatórios: `nome`, `cpf`, `email` e `dataNascimento`. Os espaços nas pontas são removidos antes de salvar.
+- **CPF:** aceito com máscara (`529.982.247-25`) ou só com os números (`52998224725`). O formato e os **dígitos verificadores** são validados; CPFs com todos os dígitos iguais, como `111.111.111-11`, são rejeitados. O CPF é salvo e retornado **só com os números**.
+- O **CPF é único**. `529.982.247-25` e `52998224725` são considerados o mesmo CPF.
+- **E-mail:** precisa estar no formato `usuario@dominio.extensao` e é salvo em minúsculas.
+- **Data de nascimento:** formato `AAAA-MM-DD`, precisa ser uma data real (rejeita `2023-02-29`, por exemplo) e não pode ser no futuro.
+- **Permissões:** admin e atendente podem listar, cadastrar e editar pacientes; remover é exclusivo do admin.
+
+#### `GET /pacientes` — Listar todos os pacientes
+
+**Headers:**
+```
+Content-Type: application/json
+Authorization: Bearer <token>
+```
+> Requer perfil: **admin** ou **atendente**
+
+**Response (200):** lista em ordem alfabética
+```json
+[
+  {
+    "id": 1,
+    "nome": "João da Silva",
+    "cpf": "52998224725",
+    "email": "joao@email.com",
+    "dataNascimento": "1990-05-20"
+  }
+]
+```
+
+**Erros possíveis:**
+| Status | Mensagem       |
+|--------|----------------|
+| 401    | Token não fornecido |
+| 403    | Proibido      |
+
+---
+
+#### `GET /pacientes/:id` — Buscar paciente por ID
+
+**Headers:**
+```
+Content-Type: application/json
+Authorization: Bearer <token>
+```
+> Requer perfil: **admin** ou **atendente**
+
+**Response (200):**
+```json
+{
+  "id": 1,
+  "nome": "João da Silva",
+  "cpf": "52998224725",
+  "email": "joao@email.com",
+  "dataNascimento": "1990-05-20"
+}
+```
+
+**Erros possíveis:**
+| Status | Mensagem      |
+|--------|---------------|
+| 401    | Token não fornecido |
+| 403    | Proibido     |
+| 404    | Paciente não encontrado |
+
+---
+
+#### `POST /pacientes` — Cadastrar novo paciente
+
+**Headers:**
+```
+Content-Type: application/json
+Authorization: Bearer <token>
+```
+> Requer perfil: **admin** ou **atendente**
+
+**Request:**
+```json
+{
+  "nome": "João da Silva",
+  "cpf": "529.982.247-25",
+  "email": "joao@email.com",
+  "dataNascimento": "1990-05-20"
+}
+```
+
+**Response (201):**
+```json
+{
+  "id": 1,
+  "nome": "João da Silva",
+  "cpf": "52998224725",
+  "email": "joao@email.com",
+  "dataNascimento": "1990-05-20"
+}
+```
+
+**Erros possíveis:**
+| Status | Mensagem              |
+|--------|-----------------------|
+| 400    | O campo `<campo>` é obrigatório |
+| 400    | CPF inválido |
+| 400    | E-mail inválido |
+| 400    | Data de nascimento inválida (use o formato AAAA-MM-DD) |
+| 400    | A data de nascimento não pode ser no futuro |
+| 401    | Token não fornecido    |
+| 403    | Proibido             |
+| 409    | Já existe um paciente com esse CPF |
+
+---
+
+#### `PUT /pacientes/:id` — Atualizar paciente
+
+**Headers:**
+```
+Content-Type: application/json
+Authorization: Bearer <token>
+```
+> Requer perfil: **admin** ou **atendente**
+
+**Request:** atualização parcial. Envie apenas os campos que deseja alterar; eles passam pelas mesmas validações do cadastro.
+```json
+{
+  "email": "joao.silva@email.com"
+}
+```
+
+**Response (200):** o paciente atualizado, no mesmo formato do `GET /pacientes/:id`.
+
+**Erros possíveis:**
+| Status | Mensagem      |
+|--------|---------------|
+| 400    | Nenhum campo para atualizar |
+| 400    | O campo `<campo>` é obrigatório (campo enviado vazio) |
+| 400    | CPF inválido |
+| 400    | E-mail inválido |
+| 400    | Data de nascimento inválida (use o formato AAAA-MM-DD) |
+| 400    | A data de nascimento não pode ser no futuro |
+| 401    | Token não fornecido |
+| 403    | Proibido     |
+| 404    | Paciente não encontrado |
+| 409    | Já existe um paciente com esse CPF |
+
+---
+
+#### `DELETE /pacientes/:id` — Remover paciente
+
+**Headers:**
+```
+Content-Type: application/json
+Authorization: Bearer <token>
+```
+> Requer perfil: **admin**
+
+**Response (204):** Sem conteúdo
+
+**Erros possíveis:**
+| Status | Mensagem      |
+|--------|---------------|
+| 401    | Token não fornecido |
+| 403    | Proibido     |
+| 404    | Paciente não encontrado |
+
+---
+
 ## Estrutura do Banco de Dados
 
 Tabela `users`:
@@ -848,6 +1025,16 @@ Tabela `medicos`:
 | especialidade_id | INTEGER      | NOT NULL, FK → especialidades(id), ON DELETE RESTRICT | Especialidade do médico |
 
 > Relacionamento: uma especialidade possui N médicos (`especialidades 1 ── N medicos`). Na API, a coluna `especialidade_id` aparece como `especialidadeId`.
+
+Tabela `pacientes`:
+
+| Coluna          | Tipo         | Restrições       | Descrição                                  |
+|-----------------|--------------|------------------|--------------------------------------------|
+| id              | SERIAL       | PK, auto-gerado  | Identificador único                        |
+| nome            | VARCHAR(255) | NOT NULL         | Nome do paciente                           |
+| cpf             | CHAR(11)     | NOT NULL, UNIQUE | CPF, só com os números                     |
+| email           | VARCHAR(255) | NOT NULL         | E-mail, em minúsculas                      |
+| data_nascimento | DATE         | NOT NULL         | Data de nascimento (`dataNascimento` na API) |
 
 **Schema SQL** disponível em `src/database/schema.sql`.
 

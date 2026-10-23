@@ -7,6 +7,7 @@ import { AppDataSource } from "./database/data-source";
 import { routes } from "./routes/UserRoutes";
 import { especialidadeRoutes } from "./routes/EspecialidadeRoutes";
 import { medicoRoutes } from "./routes/MedicoRoutes";
+import { pacienteRoutes } from "./routes/PacienteRoutes";
 import { errorHandler } from "./middlewares/errorHandler";
 
 // Instância do Express
@@ -22,6 +23,7 @@ app.use(express.json());
 app.use(routes);
 app.use(especialidadeRoutes);
 app.use(medicoRoutes);
+app.use(pacienteRoutes);
 
 // Middleware global de tratamento de erros (deve ser registrado após as rotas)
 app.use(errorHandler);
